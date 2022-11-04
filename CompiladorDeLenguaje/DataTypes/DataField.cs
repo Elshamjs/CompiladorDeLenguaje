@@ -18,10 +18,7 @@ namespace CompiladorDeLenguaje.DataTypes
         ADD,
         SUBSTRACT,
         MULTIPLY,
-        DIVIDE,
-        MODULE,
-        INCREASE,
-        DECREASE
+        DIVIDE
     }
     public enum LOGIC_OPERATOR
     {

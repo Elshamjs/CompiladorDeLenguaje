@@ -63,22 +63,71 @@ namespace CompiladorDeLenguaje.LanguageEngine
             })).Start();
         }
 
+
+        /*
+        Global:
+        {
+            Entero int=34;
+            Decimal float;
+            Binario bool;
+            Caracter char;
+            Caracter[100] buffer;
+        }
+        
+        Funcion Entero contarUnidadesDosDigitos(Entero num)
+        {
+            Entero aux;
+            $aux= #modulo(num, 10); // esto si 
+            Retorna $aux;
+        }
+
+        Funcion principal() 
+        {
+            Entero numero_usuario;
+            Entero unidades;
+            #imprimir_holamundo();
+            #Mostrar("Escribe un numero de dos digitos: ");
+            #Capturar($numero_usuario);
+            $unidades= #contarUnidadesDosDigitos($numero_usuario);
+            Mostrar(unidades);
+
+            /~ Si() Hace{} sino{} ~/ 
+            /~ Mientras() Hace{} ~/
+            /~ Para(Entero variable=0) SoloSi($variable<10) Asigna($variable++) Hace {} ~/
+        }
+
+        Funcion Nulo imprimir_holamundo()
+        {
+            $buffer= "Hola Mundo\n";
+            $num= num2;  // esto si 
+            $num= ¿num1 + num2?;  // esto si 
+            Mostrar($buffer);
+            Retorna Nulo;
+        }
+
+        Funcion Entero modulo(Entero num1, Entero num2)
+        {
+            Retorna ¿¿$num1 + $num ? + $num ?;
+        }
+
+        */
+
         static private List<string> getAllWords(string code)
         {
             string word = string.Empty;
-            List<Word> word_list = new List<Word>();
+            List<Lexeme> word_list = new List<Lexeme>();
             for(int i=0; i<code.Length; i++)
             {
                 if((code[i] >= 40 && code[i] <= 47) || (code[i] >= 59 && code[i] <= 62))
                 {
-                    if(!string.IsNullOrEmpty(word)) word_list.Add(new Word(word) { IsNameWord = true });
+                    if(!string.IsNullOrEmpty(word)) word_list.Add(new Lexeme(word) { IsNameWord = true });
                     switch(code[i])
                     {
-                        case '+': word_list.Add(new Word("" + code[i]) { IsArithmeticOperator = true }); break; 
-                        case '-': word_list.Add(new Word("" + code[i]) { IsArithmeticOperator = true }); break;
-                        case '/': word_list.Add(new Word("" + code[i]) { IsArithmeticOperator = true }); break;
-                        case '*': word_list.Add(new Word("" + code[i]) { IsArithmeticOperator = true }); break;
-                        case '&': word_list.Add(new Word("" + code[i]) { IsArithmeticOperator = true }); break;
+                        case '+': word_list.Add(new Lexeme("" + code[i]) { IsArithmeticOperator = true }); break; 
+                        case '-': word_list.Add(new Lexeme("" + code[i]) { IsArithmeticOperator = true }); break;
+                        case '/': word_list.Add(new Lexeme("" + code[i]) { IsArithmeticOperator = true }); break;
+                        case '*': word_list.Add(new Lexeme("" + code[i]) { IsArithmeticOperator = true }); break;
+                        case '&': word_list.Add(new Lexeme("" + code[i]) { IsArithmeticOperator = true }); break;
                     }
                     word = "";
                     continue;
@@ -108,7 +157,7 @@ namespace CompiladorDeLenguaje.LanguageEngine
                 }
                 if (code[i] == ' ' || code[i] == '\n')
                 {
-                    word_list.Add(new Word(word) { IsNameWord = true });
+                    word_list.Add(new Lexeme(word) { IsNameWord = true });
                     word = "";
                     continue;
                 }
