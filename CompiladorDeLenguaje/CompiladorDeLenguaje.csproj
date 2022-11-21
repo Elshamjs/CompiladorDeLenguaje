@@ -48,7 +48,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataTypes\DataField.cs" />
-    <Compile Include="DataTypes\BooleanVariable.cs" />
     <Compile Include="DataTypes\NonPrimitiveArray.cs" />
     <Compile Include="DataTypes\NonPrimitiveMultiArray.cs" />
     <Compile Include="DataTypes\PrimitiveVariable.cs" />
@@ -56,7 +55,24 @@
     <Compile Include="LanguageEngine\Lexeme.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LanguageEngine\Valentina.cs" />
-    <Compile Include="Structures\StructFunction.cs" />
+    <Compile Include="Structures\StructOperations\StructArithmeticOperation.cs" />
+    <Compile Include="Structures\StructOperations\StructCompareOperation.cs" />
+    <Compile Include="Structures\StructField.cs" />
+    <Compile Include="Structures\StructFuncion.cs" />
+    <Compile Include="Structures\StructFuncionCall.cs" />
+    <Compile Include="Structures\StructGlobal.cs" />
+    <Compile Include="Structures\StructOperations\StructLogicOperation.cs" />
+    <Compile Include="Structures\StructMientras.cs" />
+    <Compile Include="Structures\StructOperations\StructOperation.cs" />
+    <Compile Include="Structures\StructPara.cs" />
+    <Compile Include="Structures\StructReturn.cs" />
+    <Compile Include="Structures\StructControl.cs" />
+    <Compile Include="Structures\StructSi.cs" />
+    <Compile Include="Structures\StructSystemCall.cs" />
+    <Compile Include="Structures\StructValueAssign.cs" />
+    <Compile Include="Structures\StructValueAssignCall.cs" />
+    <Compile Include="Structures\StructValueAssignOperation.cs" />
+    <Compile Include="Structures\StructVariableDeclare.cs" />
     <Compile Include="WindowsForms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -88,6 +104,8 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="LanguageEngine\CodigoEjemplo.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
