@@ -97,6 +97,7 @@ namespace CompiladorDeLenguaje.WindowsForms
             this.txt_input.Size = new System.Drawing.Size(1197, 728);
             this.txt_input.TabIndex = 0;
             this.txt_input.Text = "";
+            this.txt_input.WordWrap = false;
             // 
             // groupBox1
             // 

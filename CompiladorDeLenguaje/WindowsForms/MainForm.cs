@@ -58,7 +58,7 @@ namespace CompiladorDeLenguaje.WindowsForms
             }
             eve.Handled=true;
         };
-        private string example_hello_world = "Global:\r\n{\r\n    Entero eint=-10;\r\n    Decimal float= 0.5;\r\n    Binario bool= Falso; \r\n    Caracter char= 'A';\r\n}\r\nCodigo:\r\n{\r\n    Entero sum= 0;\r\n    Entero cont=1;\r\n    Mientras((cont<=10)) Hace\r\n    {\r\n        #MostrarLn(cont);\r\n        Si((cont==5)) Hace\r\n        {\r\n            #Mostrar(\"Codigo finalizado en: \");\r\n            #MostrarLn(cont);\r\n            Sale;\r\n        }\r\n        $sum=(sum+cont);\r\n        $cont= (cont+1);\r\n    }\r\n    #MostrarLn(sum);\r\n}";
+        private string example_hello_world = "Global:\r\n{\r\n    Entero aux1=0;\r\n    Entero aux2=0;\r\n    Entero aux3=0;\r\n}\r\nFuncion Entero fib(Entero n, Binario print)\r\n{\r\n    Entero ret=0;\r\n    Si((n>0)) Hace\r\n    {\r\n        Si((n<2)) Hace\r\n        {\r\n            $ret=1;\r\n        }\r\n        Sino\r\n        {\r\n            $aux3= (n-1);\r\n            $aux1= #fib(aux3, Falso);\r\n            $aux3= (n-2);\r\n            $aux2= #fib(aux3, Falso);\r\n        }\r\n        Si(print) Hace\r\n        {\r\n            $aux3= (n-1);\r\n            #fib(aux3, Verdadero);\r\n            #Mostrar(ret);\r\n        }\r\n    }\r\n    Retorna ret;\r\n}\r\nCodigo:\r\n{\r\n    #fib(20, Verdadero);\r\n    #SaltoLinea();\r\n}";
         public MainForm()
         {
             InitializeComponent();
@@ -89,6 +89,7 @@ namespace CompiladorDeLenguaje.WindowsForms
                 Valentina.Output.Text = regex.IsMatch(Valentina.Input.Text).ToString();
             };*/
             Valentina.Input.Text = example_hello_world;
+
         }
 
         private void compileCodeClick(object sender, EventArgs e)

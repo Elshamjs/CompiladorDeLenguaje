@@ -24,7 +24,7 @@ namespace CompiladorDeLenguaje.LanguageEngine
         static public IEnumerable<string> key_character = new List<string>() { "#", "$", "?", "¿", "=", ";", "\"", ","};/**/
         static public IEnumerable<string> square_brackets = new List<string>() { "[", "]" };/**/
         static public IEnumerable<string> boolvalues_brackets = new List<string>() { "Verdadero", "Falso" };/**/
-        static public IEnumerable<string> key_word = new List<string>() { "Mientras", "Para", "Si", "Retorna", "Funcion", "Global:", "Codigo:", "Sino", "Hasta", "Sale", "Continua", "Hace" };/**/
+        static public IEnumerable<string> key_word = new List<string>() { "Mientras", "Para", "Si", "Retorna", "Funcion", "Global:", "Codigo:", "Sino", "Hasta", "Sale", "Continua", "Hace", "Asigna", "SoloSi" };/**/
         static public IEnumerable<string> system_fuctions = new List<string>() { "Mostrar", "Capturar", "LimpiarConsola", "SaltoLinea", "MostrarLn" };/**/
         static public List<StructVariableDeclare> LocalDeclarations = new List<StructVariableDeclare>();
         static public Regex regex_word = new Regex("^[a-zA-Z_]");
@@ -162,6 +162,7 @@ namespace CompiladorDeLenguaje.LanguageEngine
                 if (!this_lexeme.Text.Equals(";")) throw new Exception("Error de Sintaxis: Terminacion de linea falta despues de declaracion de variable");
                 i++; this_lexeme = extracted_lexemes[i];
                 aux = new StructVariableDeclare(variable_declare, identifier, start_value);
+                aux.Variable.Identifier = identifier;
             }
             return aux;
         }
@@ -640,7 +641,7 @@ namespace CompiladorDeLenguaje.LanguageEngine
                         }
                         else if (current_lexeme.Text.Equals("$"))
                         {
-                            
+                            dest_code.Add(findStructVariableAssign(lexemes, ref i, src_local_variables, ref current_lexeme));
                         }
                         else
                         {
@@ -712,8 +713,7 @@ namespace CompiladorDeLenguaje.LanguageEngine
                                         i++; current_lexeme = lexemes[i];
                                         if((variable1.Type == DATA_TYPE.ENTERO || variable1.Type == DATA_TYPE.DECIMAL) && (variable2.Type == DATA_TYPE.ENTERO || variable2.Type == DATA_TYPE.DECIMAL))
                                         {
-                                            if (not) throw new Exception("Error de Sintaxis: Las operaciones de comparacion no aceptan (No), utilize el operator de comparacion \"!=\" para eso");
-                                            si_struct.ConditionCompareOperation = new StructCompareOperation(variable1, variable2, logic_operator);
+                                            si_struct.ConditionCompareOperation = new StructCompareOperation(variable1, variable2, logic_operator, not);
                                         }
                                         else if(variable1.Type == DATA_TYPE.BINARIO && variable2.Type == DATA_TYPE.BINARIO)
                                         {
@@ -727,7 +727,7 @@ namespace CompiladorDeLenguaje.LanguageEngine
                                     else
                                     {
                                         variable1= getVariableValueFromLexeme(lexemes, ref i, src_local_variables);
-                                        if (variable1.Type != DATA_TYPE.BINARIO) throw new Exception("Error de Semantica: El cuerpo de un Si solo puede tener valores Binario");
+                                        if (variable1.Type != DATA_TYPE.BINARIO) throw new Exception("Error de Semantica: El cuerpo de un Si solo puede tener valores Binario o una operacion que devuelva Binario. Ej Si((a<b))");
                                         i++; current_lexeme = lexemes[i];
                                         if (!current_lexeme.Text.Equals(")")) throw new Exception("Error de Sintaxis: El cuerpo del Si debe cerrar con \")\"");
                                         si_struct.ConditionSimple = (PrimitiveVariable<bool>)variable1;
@@ -803,40 +803,58 @@ namespace CompiladorDeLenguaje.LanguageEngine
                                     i++; current_lexeme = lexemes[i];
                                     break;
                                 }
-                            case "Para": //Para(Entero i= 0;SoloSi((i<10)); Asigna $i=();) Hace {}
+                            case "Para": //Para(Entero i= 0;SoloSi((i<10)); Asigna $i=(a-2);) Hace {}
                                 {
+                                    StructPara struct_para = new StructPara();
                                     StructVariableDeclare declare;
+                                    StructField asign_struct;
                                     DataField solosi_var1;
                                     DataField solosi_var2;
                                     string compare_operator;
+                                    List<StructVariableDeclare> declare_list= new List<StructVariableDeclare>(src_local_variables);
                                     StructCompareOperation compare_operation;
                                     i++; current_lexeme = lexemes[i];
-                                    declare= getVariableDeclare(ref i, src_local_variables);
+                                    if (current_lexeme.Text != "(") throw new Exception("Error Sintaxis: Cuerpo de Para invalido, se esperaba \"(\"");
+                                    i++; current_lexeme = lexemes[i];
+                                    declare = getVariableDeclare(ref i, src_local_variables);
+                                    declare_list.Add(declare);
+                                    current_lexeme = lexemes[i];
                                     if (current_lexeme.Text != "SoloSi") throw new Exception(@"Error de Sintaxis: Falta palabra reservada SoloSi dentro de cuerpo de Para");
+                                    i++; current_lexeme = lexemes[i];
                                     if (current_lexeme.Text != "(") throw new Exception("Error Sintaxis: Cuerpo de Para invalido");
                                     i++; current_lexeme = lexemes[i];
                                     if (!current_lexeme.Text.Equals("(")) throw new Exception(@"Error de Sintaxis: Se esperaba ""("" despues de palabra reservada SoloSi dentro del cuerpo del Para");
                                     i++; current_lexeme = lexemes[i];
-                                    solosi_var1 = getVariableValueFromLexeme(lexemes, ref i, src_local_variables);
+                                    solosi_var1 = getVariableValueFromLexeme(lexemes, ref i, declare_list);
                                     if (!(solosi_var1.Type == DATA_TYPE.ENTERO || solosi_var1.Type == DATA_TYPE.DECIMAL)) throw new Exception("Error de Semantica: La operacion de comparacion del cuerpo de un Para solo puede tener variables de tipo Entero o Decimal");
                                     i++; current_lexeme = lexemes[i];
                                     compare_operator = current_lexeme.Text;
                                     if (current_lexeme.WhatKind != LexemeKind.CompareOperator) throw new Exception("Error de Sintaxis: El cuerpo de un Para solo puede tener operadores logicos");
                                     i++; current_lexeme = lexemes[i];
-                                    solosi_var2 = getVariableValueFromLexeme(lexemes, ref i, src_local_variables);
+                                    solosi_var2 = getVariableValueFromLexeme(lexemes, ref i, declare_list);
                                     if (!(solosi_var1.Type == DATA_TYPE.ENTERO || solosi_var1.Type == DATA_TYPE.DECIMAL)) throw new Exception("Error de Semantica: La operacion de comparacion del cuerpo de un Para solo puede tener variables de tipo Entero o Decimal");
                                     i++; current_lexeme = lexemes[i];
                                     if (!current_lexeme.Text.Equals(")")) throw new Exception("Error de Sintaxis: La operacion comparativa del cuerpo del Para debe cerrar con \")\"");
                                     i++; current_lexeme = lexemes[i];
                                     if (!current_lexeme.Text.Equals(")")) throw new Exception("Error de Sintaxis: El cuerpo del Para debe cerrar con \")\"");
-                                    i++; current_lexeme = lexemes[i];
                                     compare_operation = new StructCompareOperation(solosi_var1, solosi_var2, compare_operator);
                                     i++; current_lexeme = lexemes[i];
                                     if (current_lexeme.Text != ";") throw new Exception(@"Error de Sintaxis: Se esperaba "";"" dentro del cuerpo del Para");
                                     i++; current_lexeme = lexemes[i];
-                                    if (current_lexeme.Text != "Asigna") throw new Exception(@"Se espera palabra reservada ""Asigna"" detro de cuerpo de Para");
-
-
+                                    if (current_lexeme.Text != "Asigna") throw new Exception(@"Error de Sintaxis: Se espera palabra reservada ""Asigna"" detro de cuerpo de Para");
+                                    i++; current_lexeme = lexemes[i];
+                                    if (current_lexeme.Text != "$") throw new Exception(@"Error de Sintaxis: Se esperaba ""$"" antes de asignacion dentro del cuerpo del Para");
+                                    asign_struct = findStructVariableAssign(lexemes, ref i, declare_list, ref current_lexeme);
+                                    if (current_lexeme.Text != ")") throw new Exception(@"Error de Sintaxis: Se espera "")"" en el cierre de los parametros de Para");
+                                    i++; current_lexeme = lexemes[i];
+                                    if (current_lexeme.Text != "Hace") throw new Exception(@"Error de Sintaxis: Se espera palabra reservada Hace antes de bloque de codigo");
+                                    getRunCode(struct_para.Code, lexemes, ref i, declare_list);
+                                    struct_para.StructAssign = asign_struct;
+                                    struct_para.iterator = declare;
+                                    struct_para.CompareOperation = compare_operation;
+                                    dest_code.Add(struct_para);
+                                    i++; current_lexeme = lexemes[i];
+                                    break;
                                 }
                             default:
                                 {
@@ -855,6 +873,450 @@ namespace CompiladorDeLenguaje.LanguageEngine
                 throw new Exception("Error de Sintaxis: Inicio de bloque de codigo invalido");
             }
             return dest_code;
+        }
+
+        static private StructField findStructVariableAssign(List<Lexeme> lexemes, ref int i, List<StructVariableDeclare> src_local_variables, ref Lexeme current_lexeme)
+        {
+            StructField ret = null;
+            i++; current_lexeme = lexemes[i];
+            DataField found_variable = null;
+            findVariable(ref found_variable, src_local_variables, current_lexeme.Text, true);
+            i++; current_lexeme = lexemes[i];
+            int column = 0;
+            int row = 0;
+            string index_ss = string.Empty;
+            for (int x = i; (lexemes[x].WhatKind == LexemeKind.Numeric || lexemes[x].WhatKind == LexemeKind.SquareBrackets); x++)
+            {
+                index_ss += lexemes[x].Text;
+            }
+            if (Regex.IsMatch(index_ss, "(\\[[0-9]+\\])(\\[[0-9]+\\])"))
+            {
+                if (!lexemes[i + 6].Text.Equals("=")) throw new Exception("Error de Sintaxis: Signo de asignacion despues de variable faltante");
+                row = int.Parse(lexemes[i + 1].Text);
+                column = int.Parse(lexemes[i + 4].Text);
+                try
+                {
+                    switch (found_variable.Type)
+                    {
+                        case DATA_TYPE.BIARRAY_BINARIO:
+                            {
+                                found_variable = ((NonPrimitiveMultiArray<bool>)found_variable).Values[row, column];
+                                break;
+                            }
+                        case DATA_TYPE.BIARRAY_CARACTER:
+                            {
+                                found_variable = ((NonPrimitiveMultiArray<char>)found_variable).Values[row, column];
+                                break;
+                            }
+                        case DATA_TYPE.BIARRAY_ENTERO:
+                            {
+                                found_variable = ((NonPrimitiveMultiArray<int>)found_variable).Values[row, column];
+                                break;
+                            }
+                        case DATA_TYPE.BIARRAY_DECIMAL:
+                            {
+                                found_variable = ((NonPrimitiveMultiArray<double>)found_variable).Values[row, column];
+                                break;
+                            }
+                        default:
+                            {
+                                throw new Exception("Error de Semantica: La variable " + found_variable.Identifier + " no posee indices dobles");
+                            }
+                    }
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    throw new Exception("Error de Semantica: Los indices especificados para el arreglo bidimensional " + found_variable.Identifier + " son erroneos");
+                }
+                i += 7; current_lexeme = lexemes[i];
+            }
+            else if (Regex.IsMatch(index_ss, "(\\[[0-9]+\\])"))
+            {
+                if (!lexemes[i + 3].Text.Equals("=")) throw new Exception("Error de Sintaxis: Signo de asignacion despues de variable faltante");
+                column = int.Parse(lexemes[i + 1].Text);
+                try
+                {
+                    switch (found_variable.Type)
+                    {
+                        case DATA_TYPE.ARRAY_BINARIO:
+                            {
+                                found_variable = ((NonPrimitiveArray<bool>)found_variable).Values[column];
+                                break;
+                            }
+                        case DATA_TYPE.ARRAY_CARACTER:
+                            {
+                                found_variable = ((NonPrimitiveArray<char>)found_variable).Values[column];
+                                break;
+                            }
+                        case DATA_TYPE.ARRAY_ENTERO:
+                            {
+                                found_variable = ((NonPrimitiveArray<int>)found_variable).Values[column];
+                                break;
+                            }
+                        case DATA_TYPE.ARRAY_DECIMAL:
+                            {
+                                found_variable = ((NonPrimitiveArray<double>)found_variable).Values[column];
+                                break;
+                            }
+                        default:
+                            {
+                                throw new Exception("Error de Semantica: La variable " + found_variable.Identifier + " no posee indices");
+                            }
+                    }
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    throw new Exception("Error de Semantica: Los indices especificados para el arreglo " + found_variable.Identifier + " son erroneos");
+                }
+                i += 4; current_lexeme = lexemes[i];
+            }
+            else
+            {
+                if (!current_lexeme.Text.Equals("=")) throw new Exception("Error de Sintaxis: Signo de asignacion despues de variable faltante");
+                i++; current_lexeme = lexemes[i];
+            }
+            string value = string.Empty;
+            int negative = 1;
+            bool not = false;
+            if (current_lexeme.Text.Equals("-"))
+            {
+                negative = -1;
+                i++; current_lexeme = lexemes[i];
+            }
+            else if (current_lexeme.Text.Equals("(No)"))
+            {
+                not = true;
+                i++; current_lexeme = lexemes[i];
+            }
+            if (current_lexeme.Text.Equals("(")) //ENCONTRAR ASIGNACION DE OPERACION INICIA
+            {
+                if (negative == -1) throw new Exception("Error de Sintaxis: No se puede usar signo negativo para efectuar una operacion, solo el operador logico (No)");
+                i++; current_lexeme = lexemes[i];
+                if (current_lexeme.Text.Equals("-")) //PODRIA SER NEGATIVO
+                {
+                    negative = -1;
+                    i++; current_lexeme = lexemes[i];
+                }
+                DataField operand1 = getVariableValueFromLexeme(lexemes, ref i, src_local_variables); //OPERANDO IZQUIERDO
+                if (negative == -1 && !operand1.Identifier.Equals("000")) throw new Exception("Error de Sintaxis: Solo las constantes pueden tener signo, las variables no");
+                i++; current_lexeme = lexemes[i];
+                string operator_ss = current_lexeme.Text;
+                switch (current_lexeme.WhatKind)
+                {
+                    case LexemeKind.ArithmeticOperator:
+                        {
+                            if (!(found_variable.Type == DATA_TYPE.ENTERO || found_variable.Type == DATA_TYPE.DECIMAL)) throw new Exception("Una operacion aritmetica solo puede asignarse a una variable Entera o Decimal");
+                            i++; current_lexeme = lexemes[i];
+                            int negative2 = 1;
+                            if (current_lexeme.Text.Equals("-")) //PODRIA SER NEGATIVO
+                            {
+                                negative2 = -1;
+                                i++; current_lexeme = lexemes[i];
+                            }
+                            DataField operand2 = getVariableValueFromLexeme(lexemes, ref i, src_local_variables); //OPERANDO DERECHO
+                            if (negative2 == -1 && !operand2.Identifier.Equals("000")) throw new Exception("Error de Sintaxis: Solo las constantes pueden tener signo, las variables no");
+                            i++; current_lexeme = lexemes[i];
+                            if (current_lexeme.Text.Equals(")")) //FINAL DE LA OPERACION, SE REVISA SINTAXIS Y SEMANTICA
+                            {
+                                if (!((operand1.Type == DATA_TYPE.ENTERO || operand1.Type == DATA_TYPE.DECIMAL) && (operand2.Type == DATA_TYPE.ENTERO || operand2.Type == DATA_TYPE.DECIMAL))) throw new Exception("Error de Sintaxis: En una operacion aritmerica los operando solo pueden ser Entero o Decimal");
+                                if (operand1.Type == DATA_TYPE.ENTERO && operand2.Type == DATA_TYPE.DECIMAL)
+                                {
+                                    ((PrimitiveVariable<int>)operand1).Value *= negative;//permite cambiar el signo del valor si es necesario
+                                    ((PrimitiveVariable<double>)operand2).Value *= negative2;
+                                    ret = new StructValueAssignOperation(found_variable, new StructArithmeticOperation((PrimitiveVariable<int>)operand1, (PrimitiveVariable<double>)operand2, operator_ss, found_variable.Type));
+                                }
+                                else if (operand1.Type == DATA_TYPE.DECIMAL && operand2.Type == DATA_TYPE.ENTERO)
+                                {
+                                    ((PrimitiveVariable<double>)operand1).Value *= negative;
+                                    ((PrimitiveVariable<int>)operand2).Value *= negative2;
+                                    ret = new StructValueAssignOperation(found_variable, new StructArithmeticOperation((PrimitiveVariable<double>)operand1, (PrimitiveVariable<int>)operand2, operator_ss, found_variable.Type));
+                                }
+                                else if (operand1.Type == DATA_TYPE.DECIMAL && operand2.Type == DATA_TYPE.DECIMAL)
+                                {
+                                    ((PrimitiveVariable<double>)operand1).Value *= negative;
+                                    ((PrimitiveVariable<double>)operand2).Value *= negative2;
+                                    ret = new StructValueAssignOperation(found_variable, new StructArithmeticOperation((PrimitiveVariable<double>)operand1, (PrimitiveVariable<double>)operand2, operator_ss, found_variable.Type));
+                                }
+                                else if (operand1.Type == DATA_TYPE.ENTERO && operand2.Type == DATA_TYPE.ENTERO)
+                                {
+                                    ((PrimitiveVariable<int>)operand1).Value *= negative;
+                                    ((PrimitiveVariable<int>)operand2).Value *= negative2;
+                                    ret = new StructValueAssignOperation(found_variable, new StructArithmeticOperation((PrimitiveVariable<int>)operand1, (PrimitiveVariable<int>)operand2, operator_ss, found_variable.Type));
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception("Error de Sintaxis: Las operaciones deben finalizar con )");
+                            }
+                            break;
+                        }
+                    case LexemeKind.LogicOperator:
+                        {
+                            if (found_variable.Type != DATA_TYPE.BINARIO) throw new Exception("Una operacion logica solo puede ser asignada a una variable Binaria");
+                            i++; current_lexeme = lexemes[i];
+                            DataField operand2 = getVariableValueFromLexeme(lexemes, ref i, src_local_variables); //OPERANDO DERECHO
+                            i++; current_lexeme = lexemes[i];
+                            if (current_lexeme.Text.Equals(")")) //FINAL DE LA OPERACION, SE REVISA SINTAXIS Y SEMANTICA
+                            {
+                                if (!(operand1.Type == DATA_TYPE.BINARIO && operand2.Type == DATA_TYPE.BINARIO)) throw new Exception("Error de Sintaxis: En una operacion logica los operando solo pueden ser Binario");
+                                ret = new StructValueAssignOperation(found_variable, new StructLogicOperation((PrimitiveVariable<bool>)operand1, (PrimitiveVariable<bool>)operand2, operator_ss, not));
+                            }
+                            else
+                            {
+                                throw new Exception("Error de Sintaxis: Las operaciones deben finalizar con )");
+                            }
+                            break;
+                        }
+                    case LexemeKind.CompareOperator: //
+                        {
+                            if (found_variable.Type != DATA_TYPE.BINARIO) throw new Exception("Una operacion comparativa solo puede ser asignada a una variable Binaria");
+                            i++; current_lexeme = lexemes[i];
+                            int negative2 = 1;
+                            if (current_lexeme.Text.Equals("-")) //PODRIA SER NEGATIVO
+                            {
+                                negative2 = -1;
+                                i++; current_lexeme = lexemes[i];
+                            }
+                            DataField operand2 = getVariableValueFromLexeme(lexemes, ref i, src_local_variables); //OPERANDO DERECHO
+                            i++; current_lexeme = lexemes[i];
+                            if (current_lexeme.Text.Equals(")")) //FINAL DE LA OPERACION, SE REVISA SINTAXIS Y SEMANTICA
+                            {
+                                if (!((operand1.Type == DATA_TYPE.ENTERO || operand1.Type == DATA_TYPE.DECIMAL) && (operand2.Type == DATA_TYPE.ENTERO || operand2.Type == DATA_TYPE.DECIMAL))) throw new Exception("Error de Sintaxis: En una operacion aritmerica los operando solo pueden ser Entero o Decimal");
+                                if (operand1.Type == DATA_TYPE.ENTERO && operand2.Type == DATA_TYPE.DECIMAL)
+                                {
+                                    ((PrimitiveVariable<int>)operand1).Value *= negative;//permite cambiar el signo del valor si es necesario
+                                    ((PrimitiveVariable<double>)operand2).Value *= negative2;
+                                    ret = new StructValueAssignOperation(found_variable, new StructCompareOperation((PrimitiveVariable<int>)operand1, (PrimitiveVariable<double>)operand2, operator_ss));
+                                }
+                                else if (operand1.Type == DATA_TYPE.DECIMAL && operand2.Type == DATA_TYPE.ENTERO)
+                                {
+                                    ((PrimitiveVariable<double>)operand1).Value *= negative;
+                                    ((PrimitiveVariable<int>)operand2).Value *= negative2;
+                                    ret = new StructValueAssignOperation(found_variable, new StructCompareOperation((PrimitiveVariable<double>)operand1, (PrimitiveVariable<int>)operand2, operator_ss));
+                                }
+                                else if (operand1.Type == DATA_TYPE.DECIMAL && operand2.Type == DATA_TYPE.DECIMAL)
+                                {
+                                    ((PrimitiveVariable<double>)operand1).Value *= negative;
+                                    ((PrimitiveVariable<double>)operand2).Value *= negative2;
+                                    ret = new StructValueAssignOperation(found_variable, new StructCompareOperation((PrimitiveVariable<double>)operand1, (PrimitiveVariable<double>)operand2, operator_ss));
+                                }
+                                else if (operand1.Type == DATA_TYPE.ENTERO && operand2.Type == DATA_TYPE.ENTERO)
+                                {
+                                    ((PrimitiveVariable<int>)operand1).Value *= negative;
+                                    ((PrimitiveVariable<int>)operand2).Value *= negative2;
+                                    ret = new StructValueAssignOperation(found_variable, new StructCompareOperation((PrimitiveVariable<int>)operand1, (PrimitiveVariable<int>)operand2, operator_ss));
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception("Error de Sintaxis: Las operaciones deben finalizar con )");
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            throw new Exception("Error de Sintaxis: La operacion no tiene un formato correcto");
+                        }
+                } //ENCONTRAR ASIGNACION DE OPERACION TERMINA
+                i++; current_lexeme = lexemes[i];
+                if (current_lexeme.Text.Equals(";"))
+                {
+                    i++; current_lexeme = lexemes[i];
+                }
+                else
+                {
+                    throw new Exception("Error de Sintaxis: Los finales de linea deben acabar con ;");
+                }
+
+            }
+            else
+            {
+                value += current_lexeme.Text;
+                switch (current_lexeme.WhatKind)
+                {
+                    case LexemeKind.String:
+                        {
+                            if (negative == -1) throw new Exception("Error de Sintaxis: El signo de negativo no se permite con arreglos de caracteres");
+                            if (found_variable.Type == DATA_TYPE.ARRAY_CARACTER)
+                            {
+                                i++; current_lexeme = lexemes[i];
+                                if (current_lexeme.Text.Equals(";"))
+                                {
+                                    ret = new StructValueAssign(found_variable, new NonPrimitiveArray<char>(value.Length - 2, value.Replace("\"", string.Empty).ToArray(), DATA_TYPE.ARRAY_CARACTER, "000"));
+                                }
+                                else
+                                {
+                                    throw new Exception("Error de Sintaxis: Final de linea invalido, talves haga falta un ;");
+                                }
+                                i++; current_lexeme = lexemes[i];
+                            }
+                            else
+                            {
+                                throw new Exception("Error de Semantica: Los tipos de dato no coinciden");
+                            }
+                            break;
+                        }
+                    case LexemeKind.Numeric:
+                        {
+                            if (negative == -1) value = "-" + value;
+                            if (found_variable.Type == DATA_TYPE.ENTERO)
+                            {
+                                i++; current_lexeme = lexemes[i];
+                                if (current_lexeme.Text.Equals(";"))
+                                {
+                                    int val = 0;
+                                    if (int.TryParse(value, out val))
+                                    {
+                                        ret = new StructValueAssign(found_variable, new PrimitiveVariable<int>(val, "000", DATA_TYPE.ENTERO));
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("Error de Sintaxis: No se pudo leer el formato del numero.");
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception("Error de Sintaxis: Final de linea invalido, talves haga falta un ; o el valor este mal escrito.");
+                                }
+                                i++; current_lexeme = lexemes[i];
+                            }
+                            else if (found_variable.Type == DATA_TYPE.DECIMAL)
+                            {
+                                i++; current_lexeme = lexemes[i];
+                                if (current_lexeme.Text.Equals(";"))
+                                {
+                                    double val = 0;
+                                    if (double.TryParse(value, out val))
+                                    {
+                                        ret = new StructValueAssign(found_variable, new PrimitiveVariable<double>(val, "000", DATA_TYPE.DECIMAL));
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("Error de Sintaxis: No se pudo leer el formato del numero.");
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception("Error de Sintaxis: Final de linea invalido, talves haga falta un ;");
+                                }
+                                i++; current_lexeme = lexemes[i];
+                            }
+                            else
+                            {
+                                throw new Exception("Error de Semantica: Los tipos de dato no coinciden");
+                            }
+                            break;
+                        }
+                    case LexemeKind.BooleanValue:
+                        {
+                            if (negative == -1) throw new Exception("Error de Sintaxis: El valor de asignacion no se permite con valores Binario");
+                            if (found_variable.Type == DATA_TYPE.BINARIO)
+                            {
+                                i++; current_lexeme = lexemes[i];
+                                if (current_lexeme.Text.Equals(";"))
+                                {
+                                    ret = new StructValueAssign(found_variable, new PrimitiveVariable<bool>(value.Equals("Verdadero"), "000", DATA_TYPE.BINARIO));
+                                }
+                                else
+                                {
+                                    throw new Exception("Error de Sintaxis: Final de linea invalido, talves haga falta un ;");
+                                }
+                                i++; current_lexeme = lexemes[i];
+                            }
+                            else
+                            {
+                                throw new Exception("Error de Semantica: Los tipos de dato no coinciden");
+                            }
+                            break;
+                        }
+                    case LexemeKind.Identifier:
+                        {
+                            if (negative == -1) throw new Exception("Error de Sintaxis: El valor de asignacion negativo para variables no es posible en valores que no sean operaciones");
+                            DataField found_variable_value = null;
+                            findVariable(ref found_variable_value, src_local_variables, current_lexeme.Text, true);
+                            if (found_variable_value.Type == found_variable.Type)
+                            {
+                                i++; current_lexeme = lexemes[i];
+                                if (current_lexeme.Text.Equals(";"))
+                                {
+                                    ret = new StructValueAssign(found_variable, found_variable_value);
+                                }
+                                else
+                                {
+                                    throw new Exception("Error de Sintaxis: Final de linea invalido, talves haga falta un ;");
+                                }
+                                i++; current_lexeme = lexemes[i];
+                            }
+                            else
+                            {
+                                throw new Exception("Error de Semantica: Los tipos de dato no coinciden");
+                            }
+                            break;
+                        }
+                    case LexemeKind.Char:
+                        {
+                            if (negative == -1) throw new Exception("Error de Sintaxis: El valor de asignacion no es reconocible");
+                            if (found_variable.Type == DATA_TYPE.CARACTER)
+                            {
+                                i++; current_lexeme = lexemes[i];
+                                if (current_lexeme.Text.Equals(";"))
+                                {
+                                    ret = new StructValueAssign(found_variable, new PrimitiveVariable<char>(char.Parse(value.Replace("'", string.Empty)), "000", DATA_TYPE.CARACTER));
+                                }
+                                else
+                                {
+                                    throw new Exception("Error de Sintaxis: Final de linea invalido, talves haga falta un ;");
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception("Error de Semantica: Los tipos de dato no coinciden");
+                            }
+                            i++; current_lexeme = lexemes[i];
+                            break;
+                        }
+                    case LexemeKind.KeyCharacter:
+                        {
+                            if (!current_lexeme.Text.Equals("#")) throw new Exception("Error de Compilacion: No se logro desifrar el valor de asignacion a la variable " + found_variable.Identifier);
+                            if (negative == -1) throw new Exception("Error de Compilacion: Una llamada a funcion no puede tener signo negativo");
+                            i++; current_lexeme = lexemes[i];
+                            if (current_lexeme.WhatKind != LexemeKind.Identifier) throw new Exception("Error de Compilacion: No se pudo comprender el identificador de la funcion despues de \"#\"");
+
+                            string func_name = current_lexeme.Text;
+                            i++; current_lexeme = lexemes[i];
+                            if (!current_lexeme.Text.Equals("(")) throw new Exception("Error de Sintaxis: Los parametros de la funcion inician con (");
+                            i++; current_lexeme = lexemes[i];
+                            List<DataField> data_params = new List<DataField>();
+                            while (!current_lexeme.Text.Equals(")"))
+                            {
+                                data_params.Add(getVariableValueFromLexeme(lexemes, ref i, src_local_variables));
+                                i++; current_lexeme = lexemes[i];
+                                if (current_lexeme.Text.Equals(","))
+                                {
+                                    i++; current_lexeme = lexemes[i];
+                                }
+                            }
+                            i++; current_lexeme = lexemes[i];
+                            if (!current_lexeme.Text.Equals(";")) throw new Exception("Error de Sintaxis: Final de Linea invalido.");
+                            List<DATA_TYPE> types_params = new List<DATA_TYPE>();
+                            foreach (var item in data_params)
+                            {
+                                types_params.Add(item.Type);
+                            }
+                            StructFuncion aux = findFuncion(func_name, types_params);
+                            if (aux == null) throw new Exception("Error de Semantica: La funcion llamada " + func_name + " no existe o ninguna de sus sobrecargas corresponde con los parametros ingresados");
+                            if (found_variable.Type != aux.ReturnType) throw new Exception("Error de Semantica: El tipo de dato devuelto por " + func_name + " " + DataField.DataTypeToString(aux.ReturnType) + " no es el mismo de la variable " + found_variable.Identifier + " " + DataField.DataTypeToString(found_variable.Type));
+                            ret = new StructValueAssignCall(found_variable, new StructFuncionCall(aux, data_params));
+                            i++; current_lexeme = lexemes[i];
+                            break;
+                        }
+                    default:
+                        {
+                            throw new Exception("Error de Sintaxis: El valor de asignacion no es reconocible");
+                        }
+                }
+            }
+            return ret;
         }
 
         static private void ExecuteCodeBlock(List<StructField> code_block)
