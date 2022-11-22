@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using CompiladorDeLenguaje.DataTypes;
+using CompiladorDeLenguaje.LanguageEngine;
 
 namespace CompiladorDeLenguaje.Structures
 {
@@ -11,6 +12,7 @@ namespace CompiladorDeLenguaje.Structures
         public List<StructField> Code { get; set; }
         public List<StructVariableDeclare> LocalVariables { get; set; }
         public DATA_TYPE ReturnType { get; set; }
+        public LexemeBlock Block { get; set; }
         public StructFuncion() : base(Struct_Type.Funcion)
         {
             Parameters = new List<StructVariableDeclare>();

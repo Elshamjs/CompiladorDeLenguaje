@@ -9,18 +9,27 @@ namespace CompiladorDeLenguaje.Structures
 {
     class StructValueAssignCall : StructField
     {
-        public StructValueAssignCall(DataField variable, StructFuncionCall funcionCall) : base(Struct_Type.Value_Assign_Call)
+        public StructValueAssignCall(DataField variable, StructFuncionCall funcionCall, StructSystemCall funcionSysCall = null) : base(Struct_Type.Value_Assign_Call)
         {
             Variable = variable;
             FuncionCall = funcionCall;
+            FuncionSysCall = funcionSysCall;
         }
 
         public DataField Variable { get; set; }
         public StructFuncionCall FuncionCall { get; set; }
+        public StructSystemCall FuncionSysCall { get; set; }
 
         public override DataField runStructField()
         {
-            Variable.VariableValue= FuncionCall.runStructField().VariableValue;
+            if(FuncionCall!=null)
+            {
+                Variable.VariableValue = FuncionCall.runStructField().VariableValue;
+            }
+            else
+            {
+                Variable.VariableValue = FuncionSysCall.runStructField().VariableValue;
+            }
             return DataField.Null;
         }
     }

@@ -40,6 +40,9 @@ namespace CompiladorDeLenguaje.DataTypes
     }
     class DataField
     {
+        public bool IsInitialized { get; set; }
+        public int Rows { get; set; } = 0;
+        public int Columns { get; set; } = 0;
         public string _identifier { get; set; }
         public string Identifier { get=> _identifier; set=> setIdentifier(value); }
         public void setIdentifier(string ss)
@@ -83,6 +86,29 @@ namespace CompiladorDeLenguaje.DataTypes
         {
             this._identifier = name;
             this.Type = type;
+        }
+
+        public static bool IsBidimensional(DATA_TYPE variable_type)
+        {
+            switch(variable_type)
+            {
+                case DATA_TYPE.BIARRAY_ENTERO: return true;
+                case DATA_TYPE.BIARRAY_BINARIO: return true;
+                case DATA_TYPE.BIARRAY_DECIMAL: return true;
+                case DATA_TYPE.BIARRAY_CARACTER: return true;
+                default: return false;
+            }
+        }
+        public static bool IsUnidimensional(DATA_TYPE variable_type)
+        {
+            switch(variable_type)
+            {
+                case DATA_TYPE.ARRAY_ENTERO: return true;
+                case DATA_TYPE.ARRAY_BINARIO: return true;
+                case DATA_TYPE.ARRAY_DECIMAL: return true;
+                case DATA_TYPE.ARRAY_CARACTER: return true;
+                default: return false;
+            }
         }
         public DataField(object value, string name, DATA_TYPE type)
         {

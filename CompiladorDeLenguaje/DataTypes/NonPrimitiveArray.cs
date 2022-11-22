@@ -9,11 +9,10 @@ namespace CompiladorDeLenguaje.DataTypes
 {
     class NonPrimitiveArray<T> : DataField where T : struct
     {
-        public PrimitiveVariable<T>[] Values { get=> (PrimitiveVariable<T>[])this.VariableValue; set=> renameValue(value); }
-        public int Size { get; set; }
+        public PrimitiveVariable<T>[] Values { get => (PrimitiveVariable<T>[])this.VariableValue; set => renameValue(value); }
         public NonPrimitiveArray(int size, T[] values_array, DATA_TYPE type, string identifier) : base(identifier, type)
         {
-            Size = size;
+            Columns = size;
             private_value= new PrimitiveVariable<T>[Valentina.MemorySize];
             for(int i= 0; i< Valentina.MemorySize; i++)
             {
@@ -23,7 +22,7 @@ namespace CompiladorDeLenguaje.DataTypes
         }
         public NonPrimitiveArray(int size, DATA_TYPE type, string identifier) : base(identifier, type)
         {
-            Size= size;
+            Columns = size;
             private_value = new PrimitiveVariable<T>[Valentina.MemorySize];
             for (int i = 0; i < Valentina.MemorySize; i++)
             {
@@ -32,7 +31,8 @@ namespace CompiladorDeLenguaje.DataTypes
         }
         public NonPrimitiveArray(DATA_TYPE type, string identifier) : base(identifier, type)
         {
-            Size = 0;
+            IsInitialized = false;
+            Columns = 0;
             private_value = new PrimitiveVariable<T>[Valentina.MemorySize];
             for (int i = 0; i < Valentina.MemorySize; i++)
             {
@@ -46,9 +46,13 @@ namespace CompiladorDeLenguaje.DataTypes
                 Values[i]._identifier = ss + "[" + i + "]";
             }
         }
+        public void Validate(int indx)
+        {
+            if (!IsInitialized) throw new Exception($"Error de Compilacion: Referencia a Nulo en la variable {Identifier}. La variable {Identifier} era Nulo y no se pudo acceder");
+            if (!(indx < Columns) || indx < 0) throw new Exception($"Error de Compilacion: Se detecto un especificacion de indices de la variable {Identifier} erronea. El tamaño de {Identifier} no lo permite.");
+        }
         private void renameValue(PrimitiveVariable<T>[] values)
         {
-            Size = values.Length;
             for (int i = 0; i < Valentina.MemorySize; i++)
             {
                 if (i < values.Length) Values[i].Value = values[i].Value;

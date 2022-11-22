@@ -44,7 +44,7 @@ Codigo:
     Sino
     {
         
-    } ~\ 
+    } ~\ \~ ~\
     \~ Mientras(a < b) Hace: {} ~\
     \~ Para(Entero var=1 Hasta 10) Hace {} ~\
 }
@@ -409,7 +409,7 @@ Codigo:
 
 
 
--------------------------------------------------------------
+---------------------------------------------------------------------
 
 
 Global:
@@ -574,20 +574,27 @@ Codigo:
         #MostrarLn(cont);
         Si((cont==5)) Hace
         {
-            #Mostrar("Codigo finalizado en: ");
+            #Mostrar("Mientras acabo en: ");
             #MostrarLn(cont);
             Sale;
+        }
+        Si((cont==10)) Hace
+        {
+            #Mostrar("Se brinco el ");
+            #MostrarLn(cont);
+            Continua;
         }
         $sum=(sum+cont);
         $cont= (cont+1);
     }
+    #Mostrar("Resultado Final: ");
     #MostrarLn(sum);
 }
 
 
 
 
---------------------------------------------------------
+-------------------------------------------------------------------------
 
 
 Global:
@@ -609,7 +616,7 @@ Codigo:
 
 
 
-----------------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 
 
 Global:
@@ -651,47 +658,6 @@ Codigo:
 
 
 
-Global:
-{
-    Entero aux1=0;
-    Entero aux2=0;
-    Entero aux3=0;
-}
-Funcion Entero fib(Entero n, Binario print)
-{
-    Entero ret=0;
-    Si((n>0)) Hace
-    {
-        Si((n<2)) Hace
-        {
-            $ret=1;
-        }
-        Sino
-        {
-            $aux3= (n-1);
-            $aux1= #fib(aux3, Falso);
-            $aux3= (n-2);
-            $aux2= #fib(aux3, Falso);
-        }
-        Si(print) Hace
-        {
-            $aux3= (n-1);
-            #fib(aux3, Verdadero);
-            #Mostrar(ret);
-        }
-    }
-    Retorna ret;
-}
-Codigo:
-{
-    #fib(20, Verdadero);
-    #SaltoLinea();
-}
-
--------------------------------------------------------------------------------------------------------------
-
-
-
 
 Global
 {
@@ -704,4 +670,103 @@ Codigo:
         Entero a=1;
     }
     #MostrarLn(a);
+}
+
+
+
+--------------------------------------------------------------------------------------
+
+
+
+Global:
+{
+    Caracter[] buffer;
+    Binario[][] biboolarray;
+}
+Codigo:
+{
+    #MostrarLn(buffer[2]);
+    #MostrarLn(biboolarray[2][2]);
+}
+
+
+--------------------------------------------------------------------------------------
+
+
+Global:{}
+Codigo:
+{
+    #MostrarLn("Hola Mundo");
+}
+
+
+
+_____________________________________________________________________________________
+
+
+
+Global:{}
+
+Funcion Entero fib(Entero x)
+{
+    Si((x==0)) Hace
+    {
+        Retorna 0;
+    }
+    Si((x==1)) Hace
+    {
+        Retorna 1;
+    }
+    Entero a;
+    Entero b;
+    Entero ret;
+
+    $a= (x-1);
+    $b= (x-2);
+
+    $a= #fib(a);
+    $b= #fib(b);
+
+    $ret=(a+b);
+
+    Retorna ret;
+}
+
+Codigo:
+{
+    Entero result;
+    $result= #fib(5);
+    #MostrarLn(result);
+}
+
+
+
+--------------------------------------------------------------------
+
+
+
+Global:
+{
+    Entero size1=0;
+    Entero size2=0;
+    Caracter[][] hola= Caracter[2][2];
+}
+Codigo:
+{
+    $hola[0][0]= 'H';
+    $hola[0][1]= 'O';
+    $hola[1][0]= 'L';
+    $hola[1][1]= 'A';
+    $size1= #Medir(hola, 0);
+    Para(Entero i=0; SoloSi((i<size1)); Asigna $i=(i+1);) Hace
+    {
+        $size2= #Medir(hola, 1);
+        Para(Entero t=0; SoloSi((t<size2)); Asigna $t=(t+1);) Hace
+        {
+            #Mostrar("[");
+		#Mostrar(hola[i][t]);
+            #Mostrar("]");
+        }
+        #SaltoLinea();
+    }
 }

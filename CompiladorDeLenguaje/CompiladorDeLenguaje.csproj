@@ -53,6 +53,7 @@
     <Compile Include="DataTypes\PrimitiveVariable.cs" />
     <Compile Include="CompiladorDeLenguaje.cs" />
     <Compile Include="LanguageEngine\Lexeme.cs" />
+    <Compile Include="LanguageEngine\LexemeBlock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LanguageEngine\Valentina.cs" />
     <Compile Include="Structures\StructOperations\StructArithmeticOperation.cs" />
@@ -106,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="LanguageEngine\CodigoEjemplo.txt" />
+    <Content Include="WindowsForms\img\ICON.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

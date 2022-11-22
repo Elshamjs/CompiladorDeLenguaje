@@ -38,8 +38,18 @@ namespace CompiladorDeLenguaje.Structures
         public string Identifier { get; set; }
         public bool IsParam { get; set; }
 
+        public void MatchSizes()
+        {
+            if(StartValue != null)
+            {
+                Variable.Columns = StartValue.Columns;
+                Variable.Rows = StartValue.Rows;
+            }
+        }
+
         public override DataField runStructField()
         {
+            MatchSizes();
             if(StartValue == null) return new DataField("000", DATA_TYPE.NULO);
             switch (Variable.Type)
             {
@@ -51,10 +61,10 @@ namespace CompiladorDeLenguaje.Structures
                 case DATA_TYPE.ARRAY_BINARIO: { ((NonPrimitiveArray<bool>)Variable).Values = ((NonPrimitiveArray<bool>)StartValue).Values; break; }
                 case DATA_TYPE.ARRAY_DECIMAL: { ((NonPrimitiveArray<double>)Variable).Values = ((NonPrimitiveArray<double>)StartValue).Values; break; }
                 case DATA_TYPE.ARRAY_CARACTER: { ((NonPrimitiveArray<char>)Variable).Values = ((NonPrimitiveArray<char>)StartValue).Values; break; }
-                case DATA_TYPE.BIARRAY_ENTERO: { ((NonPrimitiveMultiArray<int>)Variable).Values = ((NonPrimitiveMultiArray<int>)StartValue).Values; break; }
+                case DATA_TYPE.BIARRAY_ENTERO: { ((NonPrimitiveMultiArray<int>)Variable).Values = ((NonPrimitiveMultiArray<int>)StartValue).Values;break; }
                 case DATA_TYPE.BIARRAY_BINARIO: { ((NonPrimitiveMultiArray<bool>)Variable).Values = ((NonPrimitiveMultiArray<bool>)StartValue).Values; break; }
                 case DATA_TYPE.BIARRAY_DECIMAL: { ((NonPrimitiveMultiArray<double>)Variable).Values = ((NonPrimitiveMultiArray<double>)StartValue).Values; break; }
-                case DATA_TYPE.BIARRAY_CARACTER: { ((NonPrimitiveMultiArray<char>)Variable).Values = ((NonPrimitiveMultiArray<char>)StartValue).Values; break; }
+                case DATA_TYPE.BIARRAY_CARACTER: { ((NonPrimitiveMultiArray<char>)Variable).Values = ((NonPrimitiveMultiArray<char>)StartValue).Values;  break; }
             }
             return new DataField("000", DATA_TYPE.NULO);
         }

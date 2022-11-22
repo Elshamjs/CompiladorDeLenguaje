@@ -2,6 +2,7 @@
 using CompiladorDeLenguaje.LanguageEngine;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -70,6 +71,17 @@ namespace CompiladorDeLenguaje.Structures
                         }
                         break;
                     }
+                case "Medir":
+                    {
+                        if (parameters.Count != 2)
+                        {
+                            throw new Exception("Error de Semantica: Ninguna sobrecarga de la funcion Mostrar() acepta " + parameters.Count + " parametro(s)");
+                        }
+                        if (parameters[1].Type != DATA_TYPE.ENTERO) throw new Exception($"Error de Semantica: Ninguna sobrecarga de la funcion Medir() corresponde con los parametros. Medir(Arreglo variable, Entero dimension_para_medir)");
+                        if (!(DataField.IsBidimensional(parameters[0].Type) || DataField.IsUnidimensional(parameters[0].Type))) throw new Exception($"Error de Semantica: Ninguna sobrecarga de la funcion Medir() acepta un parametro {DataField.DataTypeToString(parameters[0].Type)}. Solo se pueden medir arreglos.");
+                        break;
+                    }
+
                 default:
                     {
                         throw new Exception("Error de Semantica: La funcion del sistema " + system_call_name + " no existe");
@@ -230,6 +242,32 @@ namespace CompiladorDeLenguaje.Structures
                                 }
                         }
                         return new DataField("000", DATA_TYPE.NULO);
+                    }
+                case "Medir":
+                    {
+                        if (parameters.Count != 2)
+                        {
+                            throw new Exception("La funcion MostrarLn() solo posee 2 parametros");
+                        }
+                        if (DataField.IsUnidimensional(parameters[0].Type))
+                        {
+                            if ((int)parameters[1].VariableValue != 0) throw new Exception($"Error de Ejecucion: Se intento obtener la dimension {(int)parameters[1].VariableValue} de la variable {parameters[1].Identifier}. Las dimensiones inician en 0 y sin signo");
+                            return new PrimitiveVariable<int>(parameters[0].Columns, "000");
+                        }
+                        else
+                        {
+                            if (!((int)parameters[1].VariableValue == 0 || (int)parameters[1].VariableValue == 1)) throw new Exception($"Error de Ejecucion: Se intento obtener la dimension {(int)parameters[1].VariableValue} de la variable {parameters[1].Identifier}. Las dimensiones inician en 0 y sin signo");
+                            if((int)parameters[1].VariableValue==0)
+                            {
+                                return new PrimitiveVariable<int>(parameters[0].Rows, "000");
+
+                            }
+                            else
+                            {
+                                return new PrimitiveVariable<int>(parameters[0].Columns, "000");
+
+                            }
+                        }
                     }
                 default:
                     {

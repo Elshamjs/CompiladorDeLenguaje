@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -16,9 +17,9 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace CompiladorDeLenguaje.WindowsForms
 {
+
     public partial class MainForm : Form
     {
-        
         private Regex regex = new Regex("^\\s*(Caracter)(\\[[0-9]+\\])(\\[[0-9]+\\])\\s+[a-zA-Z_]+\\s*;$");
         static private int input_capture_cont= 0;
         private int TabSize = 4;
@@ -58,10 +59,11 @@ namespace CompiladorDeLenguaje.WindowsForms
             }
             eve.Handled=true;
         };
-        private string example_hello_world = "Global:\r\n{\r\n    Entero aux1=0;\r\n    Entero aux2=0;\r\n    Entero aux3=0;\r\n}\r\nFuncion Entero fib(Entero n, Binario print)\r\n{\r\n    Entero ret=0;\r\n    Si((n>0)) Hace\r\n    {\r\n        Si((n<2)) Hace\r\n        {\r\n            $ret=1;\r\n        }\r\n        Sino\r\n        {\r\n            $aux3= (n-1);\r\n            $aux1= #fib(aux3, Falso);\r\n            $aux3= (n-2);\r\n            $aux2= #fib(aux3, Falso);\r\n        }\r\n        Si(print) Hace\r\n        {\r\n            $aux3= (n-1);\r\n            #fib(aux3, Verdadero);\r\n            #Mostrar(ret);\r\n        }\r\n    }\r\n    Retorna ret;\r\n}\r\nCodigo:\r\n{\r\n    #fib(20, Verdadero);\r\n    #SaltoLinea();\r\n}";
+        private string example_hello_world = "\r\n\r\nGlobal:{}\r\nCodigo:\r\n{\r\n    #MostrarLn(\"Hola Mundo\");\r\n}";
         public MainForm()
         {
             InitializeComponent();
+            this.Icon = new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\WindowsForms\img", @"ICON.ico"));
             Valentina.Window = this;
             Valentina.Output = txt_output;
             Valentina.Input = txt_input;
@@ -73,16 +75,6 @@ namespace CompiladorDeLenguaje.WindowsForms
                 }
                 
             };
-            Valentina.Input.KeyDown += (object sender, KeyEventArgs e) =>
-            {
-                if (e.KeyCode == Keys.Tab)
-                {
-                    int po = Valentina.Input.SelectionStart;
-                    Valentina.Input.Text = Valentina.Input.Text.Insert(Valentina.Input.SelectionStart, new String(' ', TabSize));
-                    Valentina.Input.Select(po + TabSize, 0);
-                    e.Handled = true;
-                }
-            };
 
             /*Valentina.Input.KeyUp += (object sender, KeyEventArgs e) =>
             {
@@ -91,6 +83,8 @@ namespace CompiladorDeLenguaje.WindowsForms
             Valentina.Input.Text = example_hello_world;
 
         }
+
+        
 
         private void compileCodeClick(object sender, EventArgs e)
         {
@@ -174,5 +168,29 @@ namespace CompiladorDeLenguaje.WindowsForms
             }
         }
 
+        private void menuItem1_Click(object sender, EventArgs e)
+        {
+            txt_input.Clear();
+        }
+
+        private void menuItem16_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void menuItem5_Click(object sender, EventArgs e)
+        {
+            txt_input.Text = "Global:{}\r\n\r\nFuncion Entero fib(Entero x)\r\n{\r\n    Si((x==0)) Hace\r\n    {\r\n        Retorna 0;\r\n    }\r\n    Si((x==1)) Hace\r\n    {\r\n        Retorna 1;\r\n    }\r\n    Entero a;\r\n    Entero b;\r\n    Entero ret;\r\n\r\n    $a= (x-1);\r\n    $b= (x-2);\r\n\r\n    $a= #fib(a);\r\n    $b= #fib(b);\r\n\r\n    $ret=(a+b);\r\n\r\n    Retorna ret;\r\n}\r\n\r\nCodigo:\r\n{\r\n    Entero result;\r\n    $result= #fib(20);\r\n    #MostrarLn(result);\r\n}";
+        }
+
+        private void menuItem6_Click(object sender, EventArgs e)
+        {
+            txt_input.Text = "\r\nGlobal:\r\n{\r\n    Entero aa;\r\n    Entero int=10;\r\n    Entero eint=-10;\r\n    Decimal float= 0.5;\r\n    Decimal efloat=-0.5;\r\n    Binario bool= Falso; \r\n    Caracter char= 'A';\r\n    Caracter[] buffer= Caracter[100];\r\n    Entero[] intarray = Entero[100];\r\n    Decimal[] floatarray= Decimal[100];\r\n    Binario[] boolarray=  Binario[100]; \r\n    Caracter[][] bibuffer=Caracter[10][10];\r\n    Entero[][] biintarray=Entero[10][10];\r\n    Decimal[][] bifloatarray=Decimal[10][10];\r\n    Binario[][] biboolarray=Binario[10][10];\r\n    Caracter[] hola= \"Hola Mundo\"; \r\n}\r\nFuncion Entero sum(Entero num, Entero cont)\r\n{\r\n    $bool= (cont==11);\r\n    Si(bool) Hace\r\n    {\r\n        Retorna num;\r\n    }\r\n    Sino\r\n    {\r\n        $num=(cont+num);\r\n        $cont=(cont+1);\r\n        $int=#sum(num, cont);\r\n        Retorna int;\r\n    }\r\n}\r\nCodigo:\r\n{\r\n    Entero x= 0;\r\n    $x=#sum(0, 1);\r\n    #MostrarLn(x);\r\n}\r\n";
+        }
+
+        private void menuItem8_Click(object sender, EventArgs e)
+        {
+            txt_input.Text = "Global:\r\n{\r\n    Entero eint=-10;\r\n    Decimal float= 0.5;\r\n    Binario bool= Falso; \r\n    Caracter char= 'A';\r\n}\r\nCodigo:\r\n{\r\n    Entero sum= 0;\r\n    Entero cont=1;\r\n    Mientras((cont<=10)) Hace\r\n    {\r\n        #MostrarLn(cont);\r\n        Si((cont==5)) Hace\r\n        {\r\n            #Mostrar(\"Mientras acabo en: \");\r\n            #MostrarLn(cont);\r\n            Sale;\r\n        }\r\n        Si((cont==10)) Hace\r\n        {\r\n            #Mostrar(\"Se brinco el \");\r\n            #MostrarLn(cont);\r\n            Continua;\r\n        }\r\n        $sum=(sum+cont);\r\n        $cont= (cont+1);\r\n    }\r\n    #Mostrar(\"Resultado Final: \");\r\n    #MostrarLn(sum);\r\n}";
+        }
     }
 }
