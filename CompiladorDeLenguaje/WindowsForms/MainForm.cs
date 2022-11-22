@@ -192,5 +192,20 @@ namespace CompiladorDeLenguaje.WindowsForms
         {
             txt_input.Text = "Global:\r\n{\r\n    Entero eint=-10;\r\n    Decimal float= 0.5;\r\n    Binario bool= Falso; \r\n    Caracter char= 'A';\r\n}\r\nCodigo:\r\n{\r\n    Entero sum= 0;\r\n    Entero cont=1;\r\n    Mientras((cont<=10)) Hace\r\n    {\r\n        #MostrarLn(cont);\r\n        Si((cont==5)) Hace\r\n        {\r\n            #Mostrar(\"Mientras acabo en: \");\r\n            #MostrarLn(cont);\r\n            Sale;\r\n        }\r\n        Si((cont==10)) Hace\r\n        {\r\n            #Mostrar(\"Se brinco el \");\r\n            #MostrarLn(cont);\r\n            Continua;\r\n        }\r\n        $sum=(sum+cont);\r\n        $cont= (cont+1);\r\n    }\r\n    #Mostrar(\"Resultado Final: \");\r\n    #MostrarLn(sum);\r\n}";
         }
+
+        private void menuItem15_Click(object sender, EventArgs e)
+        {
+            txt_input.Text = "Global:\r\n{\r\n    Entero size1=0;\r\n    Entero size2=0;\r\n    Caracter[][] hola= Caracter[2][2];\r\n}\r\nCodigo:\r\n{\r\n    $hola[0][0]= 'H';\r\n    $hola[0][1]= 'O';\r\n    $hola[1][0]= 'L';\r\n    $hola[1][1]= 'A';\r\n    $size1= #Medir(hola, 0);\r\n    Para(Entero i=0; SoloSi((i<size1)); Asigna $i=(i+1);) Hace\r\n    {\r\n        $size2= #Medir(hola, 1);\r\n        Para(Entero t=0; SoloSi((t<size2)); Asigna $t=(t+1);) Hace\r\n        {\r\n            #Mostrar(\"[\");\r\n\t\t#Mostrar(hola[i][t]);\r\n            #Mostrar(\"]\");\r\n        }\r\n        #SaltoLinea();\r\n    }\r\n}";
+        }
+
+        private void menuItem10_Click(object sender, EventArgs e)
+        {
+            txt_input.Text = "Global:\r\n{\r\n    Caracter[] INFO= \"Este programa imprime la sucesion de fibonacci desde 1 hasta N, siendo este ultimo un numero ingresado por el usuario\";\r\n    Entero aux= 1;\r\n    Entero fib=0;\r\n    Entero lim;\r\n}\r\nCodigo:\r\n{\r\n    #MostrarLn(INFO);\r\n    #SaltoLinea();\r\n    #SaltoLinea();\r\n    #Mostrar(\"Ingrese un numero para la sucesion de fibonacci: \");\r\n    #Capturar(lim);\r\n    Si((lim>0)) Hace\r\n    {\r\n        Para(Entero init =1; SoloSi((init<=lim)); Asigna $init=(init+1);) Hace\r\n        {\r\n            #Mostrar(\"[\");\r\n            #Mostrar(fib);\r\n            #Mostrar(\"] \");\r\n            $aux= (aux+fib);\r\n            $fib=(aux-fib);\r\n        }\r\n    }\r\n    Sino\r\n    {\r\n        #MostrarLn(\"El numero debe ser mayor a cero!!\");\r\n\r\n    }\r\n    #SaltoLinea();\r\n}\r\n";
+        }
+
+        private void menuItem11_Click(object sender, EventArgs e)
+        {
+            txt_input.Text = "Global:\r\n{\r\n    Entero eint=-10;\r\n    Decimal float= 0.5;\r\n    Binario bool= Falso; \r\n    Caracter char= 'A';\r\n}\r\nCodigo:\r\n{\r\n    Entero sum= 0;\r\n    Para(Entero i= 100; SoloSi((i<=1000)); Asigna $i=(i+100);) Hace \r\n    {\r\n        $sum= (sum+i);        \r\n    }\r\n    #MostrarLn(sum);\r\n}";
+        }
     }
 }

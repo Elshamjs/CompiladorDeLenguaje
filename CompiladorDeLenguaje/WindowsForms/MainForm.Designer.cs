@@ -190,11 +190,13 @@ namespace CompiladorDeLenguaje.WindowsForms
             // 
             this.menuItem10.Index = 0;
             this.menuItem10.Text = "Fibonacci";
+            this.menuItem10.Click += new System.EventHandler(this.menuItem10_Click);
             // 
             // menuItem11
             // 
             this.menuItem11.Index = 1;
             this.menuItem11.Text = "Sumatoria";
+            this.menuItem11.Click += new System.EventHandler(this.menuItem11_Click);
             // 
             // menuItem12
             // 
@@ -218,7 +220,8 @@ namespace CompiladorDeLenguaje.WindowsForms
             // menuItem15
             // 
             this.menuItem15.Index = 0;
-            this.menuItem15.Text = "Invertir Valores";
+            this.menuItem15.Text = "Recorrer Matriz";
+            this.menuItem15.Click += new System.EventHandler(this.menuItem15_Click);
             // 
             // menuItem16
             // 

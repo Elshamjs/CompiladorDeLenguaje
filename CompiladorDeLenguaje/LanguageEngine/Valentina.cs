@@ -187,14 +187,15 @@ namespace CompiladorDeLenguaje.LanguageEngine
             return aux;
         }
 
-        static public void findVariable(ref DataField dest, List<StructVariableDeclare> src_declares,  string identifier, bool validate)
+        static public DataField findVariable(ref DataField dest, List<StructVariableDeclare> src_declares,  string identifier, bool validate)
         {
+
             foreach (StructVariableDeclare declare in src_declares)
             {
                 if (identifier.Equals(declare.Identifier))
                 {
                     dest = declare.Variable;
-                    break;
+                    return declare.Variable; 
                 }
             }
             if (dest == null)
@@ -204,16 +205,18 @@ namespace CompiladorDeLenguaje.LanguageEngine
                     if (identifier.Equals(declare.Identifier))
                     {
                         dest = declare.Variable;
-                        break;
+                        return declare.Variable;
                     }
                 }
                 if (dest == null)
                 {
-                    if (!validate) return;
+                    if (!validate) return null;
                     throw new Exception("Error de Semantica: La variable " + identifier + " no existe en el contexto actual o es una variable local de otro bloque de codigo");
                 }
             }
+            return null;
         }
+
         static public DataField getVariableValueFromLexeme(List<Lexeme> lexemes, ref int i, List<StructVariableDeclare> src_declares)
         {
             Lexeme current_lexeme = lexemes[i];
@@ -347,16 +350,29 @@ namespace CompiladorDeLenguaje.LanguageEngine
                         findVariable(ref var, src_declares, current_lexeme.Text, true);
                         i++; current_lexeme = lexemes[i];
                         string index_ss = string.Empty;
-                        int column = 0;
-                        int row = 0;
-                        for (int x = i; (lexemes[x].WhatKind == LexemeKind.Numeric || lexemes[x].WhatKind == LexemeKind.SquareBrackets); x++)
+                        DataField index1=null;
+                        DataField index2=null;
+                        int column = -1;
+                        int row = -1;
+                        for (int x = i; (lexemes[x].WhatKind == LexemeKind.Numeric || lexemes[x].WhatKind == LexemeKind.SquareBrackets) || lexemes[x].WhatKind==LexemeKind.Identifier; x++)
                         {
                             index_ss += lexemes[x].Text;
                         }
-                        if (Regex.IsMatch(index_ss, "(\\[[0-9]+\\])(\\[[0-9]+\\])"))
+                        if (Regex.IsMatch(index_ss, "^(\\[(([a-zA-Z_]+)|([0-9]+))\\])(\\[(([a-zA-Z_]+)|([0-9]+))\\])$"))
                         {
-                            row = int.Parse(lexemes[i + 1].Text);
-                            column = int.Parse(lexemes[i + 4].Text);
+
+                            if (!int.TryParse(lexemes[i + 1].Text, out row))
+                            {
+                                findVariable(ref index1, src_declares, lexemes[i + 1].Text, true);
+                                if (index1.Type != DATA_TYPE.ENTERO) throw new Exception("Error de Compilacion: Un indice solo puede ser entero");
+                            }
+                            else index1 = new PrimitiveVariable<int>(column, "000");
+                            if(!int.TryParse(lexemes[i + 4].Text, out column))
+                            {
+                                findVariable(ref index2, src_declares, lexemes[i + 4].Text, true);
+                                if (index2.Type != DATA_TYPE.ENTERO) throw new Exception("Error de Compilacion: Un indice solo puede ser entero");
+                            }
+                            else index2 = new PrimitiveVariable<int>(row, "000");
                             i += 5; current_lexeme = lexemes[i];
                             try
                             {
@@ -364,23 +380,21 @@ namespace CompiladorDeLenguaje.LanguageEngine
                                 {
                                     case DATA_TYPE.BIARRAY_BINARIO:
                                         {
-                                            ((NonPrimitiveMultiArray<bool>)var).Validate(row, column);
-                                            return ((NonPrimitiveMultiArray<bool>)var).Values[row, column];
+                                            //((NonPrimitiveMultiArray<bool>)var).Validate(row, column);
+                                            //return ((NonPrimitiveMultiArray<bool>)var).Values[row, column];
+                                            return new PrimitiveVariable<bool>(false, var + "[" + lexemes[i -4].Text + "][" + lexemes[i - 1].Text + "]") { ArrayIndex= new ArrayIndex(var, (PrimitiveVariable<int>)index1, (PrimitiveVariable<int>)index2)};
                                         }
                                     case DATA_TYPE.BIARRAY_CARACTER:
                                         {
-                                            ((NonPrimitiveMultiArray<char>)var).Validate(row, column);
-                                            return ((NonPrimitiveMultiArray<char>)var).Values[row, column];
+                                            return new PrimitiveVariable<char>('\0', var + "[" + lexemes[i - 4].Text + "][" + lexemes[i - 1].Text + "]") { ArrayIndex = new ArrayIndex(var, (PrimitiveVariable<int>)index1, (PrimitiveVariable<int>)index2) };
                                         }
                                     case DATA_TYPE.BIARRAY_ENTERO:
                                         {
-                                            ((NonPrimitiveMultiArray<int>)var).Validate(row, column);
-                                            return ((NonPrimitiveMultiArray<int>)var).Values[row, column];
+                                            return new PrimitiveVariable<int>(0, var + "[" + lexemes[i - 4].Text + "][" + lexemes[i - 1].Text + "]") { ArrayIndex = new ArrayIndex(var, (PrimitiveVariable<int>)index1, (PrimitiveVariable<int>)index2) };
                                         }
                                     case DATA_TYPE.BIARRAY_DECIMAL:
                                         {
-                                            ((NonPrimitiveMultiArray<double>)var).Validate(row, column);
-                                            return ((NonPrimitiveMultiArray<double>)var).Values[row, column];
+                                            return new PrimitiveVariable<double>(0d, var + "[" + lexemes[i - 4].Text + "][" + lexemes[i - 1].Text + "]") { ArrayIndex = new ArrayIndex(var, (PrimitiveVariable<int>)index1, (PrimitiveVariable<int>)index2) };
                                         }
                                     default:
                                         {
@@ -393,9 +407,14 @@ namespace CompiladorDeLenguaje.LanguageEngine
                                 throw new Exception("Error de Semantica: Los indices especificados para el arreglo bidimensional " + var.Identifier + " son erroneos");
                             }
                         }
-                        else if (Regex.IsMatch(index_ss, "(\\[[0-9]+\\])"))
+                        else if (Regex.IsMatch(index_ss, "^(\\[(([a-zA-Z_]+)|([0-9]+))\\])$"))
                         {
-                            column = int.Parse(lexemes[i + 1].Text);
+                            if (!int.TryParse(lexemes[i + 1].Text, out column))
+                            {
+                                findVariable(ref index1, src_declares, lexemes[i + 1].Text, true);
+                                if (index1.Type != DATA_TYPE.ENTERO) throw new Exception("Error de Compilacion: Un indice solo puede ser entero");
+                            }
+                            else index1 = new PrimitiveVariable<int>(row, "000");
                             i += 2; current_lexeme = lexemes[i];
                             try
                             {
@@ -403,23 +422,19 @@ namespace CompiladorDeLenguaje.LanguageEngine
                                 {
                                     case DATA_TYPE.ARRAY_BINARIO:
                                         {
-                                            ((NonPrimitiveArray<bool>)var).Validate(column);
-                                            return ((NonPrimitiveArray<bool>)var).Values[column];
+                                            return new PrimitiveVariable<bool>(false, var + "[" + lexemes[i - 1].Text + "]") { ArrayIndex = new ArrayIndex(var, (PrimitiveVariable<int>)index1, null )};
                                         }
                                     case DATA_TYPE.ARRAY_CARACTER:
                                         {
-                                            ((NonPrimitiveArray<char>)var).Validate(column);
-                                            return ((NonPrimitiveArray<char>)var).Values[column];
+                                            return new PrimitiveVariable<char>('\0', var + "[" + lexemes[i - 1].Text + "]") { ArrayIndex = new ArrayIndex(var, (PrimitiveVariable<int>)index1, null) };
                                         }
                                     case DATA_TYPE.ARRAY_ENTERO:
                                         {
-                                            ((NonPrimitiveArray<int>)var).Validate(column);
-                                            return ((NonPrimitiveArray<int>)var).Values[column];
+                                            return new PrimitiveVariable<int>(0, var + "[" + lexemes[i - 1].Text + "]") { ArrayIndex = new ArrayIndex(var, (PrimitiveVariable<int>)index1, null) };
                                         }
                                     case DATA_TYPE.ARRAY_DECIMAL:
                                         {
-                                            ((NonPrimitiveArray<double>)var).Validate((column));
-                                            return ((NonPrimitiveArray<double>)var).Values[column];
+                                            return new PrimitiveVariable<double>(0d, var + "[" + lexemes[i - 1].Text + "]") { ArrayIndex = new ArrayIndex(var, (PrimitiveVariable<int>)index1, null) };
                                         }
                                     default:
                                         {
@@ -454,203 +469,27 @@ namespace CompiladorDeLenguaje.LanguageEngine
                     {
                         if (current_lexeme.Text.Equals("#"))
                         {
-                            i++; current_lexeme = lexemes[i];//#
+                            i++; current_lexeme = lexemes[i];
                             if (current_lexeme.WhatKind == LexemeKind.SystemFuctions)
                             {
-                                string Funcion_name= current_lexeme.Text;
-                                i++; current_lexeme = lexemes[i];//#
-                                if (current_lexeme.WhatKind == LexemeKind.RoundBrackets)
+                                string sys_func_name = current_lexeme.Text;
+                                i++; current_lexeme = lexemes[i];
+                                if (!current_lexeme.Text.Equals("(")) throw new Exception("Error de Sintaxis: Los parametros de la funcion inician con (");
+                                i++; current_lexeme = lexemes[i];
+                                List<DataField> data_params = new List<DataField>();
+                                while (!current_lexeme.Text.Equals(")"))
                                 {
-                                    i++; current_lexeme = lexemes[i];//#
-                                    List<DataField> parameters = new List<DataField>();
-                                    while (current_lexeme.WhatKind != LexemeKind.RoundBrackets)
-                                    {
-                                        if (current_lexeme.WhatKind == LexemeKind.Identifier)
-                                        {
-                                            DataField found_variable = null;
-                                            findVariable(ref found_variable, src_local_variables, current_lexeme.Text, true);
-                                            int column = 0;
-                                            int row = 0;
-                                            i++; current_lexeme = lexemes[i];
-                                            string index_ss = string.Empty;
-                                            for(int x= i; (lexemes[x].WhatKind == LexemeKind.Numeric || lexemes[x].WhatKind == LexemeKind.SquareBrackets); x++)
-                                            {
-                                                index_ss += lexemes[x].Text;
-                                            }
-                                            if (Regex.IsMatch(index_ss, "(\\[[0-9]+\\])(\\[[0-9]+\\])"))
-                                            {
-                                                row = int.Parse(lexemes[i + 1].Text);
-                                                column = int.Parse(lexemes[i + 4].Text);
-                                                try
-                                                {
-                                                    switch(found_variable.Type)
-                                                    {
-                                                        case DATA_TYPE.BIARRAY_BINARIO:
-                                                            {
-                                                                ((NonPrimitiveMultiArray<bool>)found_variable).Validate(row, column);
-                                                                parameters.Add(((NonPrimitiveMultiArray<bool>)found_variable).Values[row, column]);
-                                                                break;
-                                                            }
-                                                        case DATA_TYPE.BIARRAY_CARACTER:
-                                                            {
-                                                                ((NonPrimitiveMultiArray<char>)found_variable).Validate(row, column);
-                                                                parameters.Add(((NonPrimitiveMultiArray<char>)found_variable).Values[row, column]);
-                                                                break;
-                                                            }
-                                                        case DATA_TYPE.BIARRAY_ENTERO:
-                                                            {
-                                                                ((NonPrimitiveMultiArray<int>)found_variable).Validate(row, column);
-                                                                parameters.Add(((NonPrimitiveMultiArray<int>)found_variable).Values[row, column]);
-                                                                break;
-                                                            }
-                                                        case DATA_TYPE.BIARRAY_DECIMAL:
-                                                            {
-                                                                ((NonPrimitiveMultiArray<double>)found_variable).Validate(row, column);
-                                                                parameters.Add(((NonPrimitiveMultiArray<double>)found_variable).Values[row, column]);
-                                                                break;
-                                                            }
-                                                        default:
-                                                            {
-                                                                throw new Exception("Error de Semantica: La variable " + found_variable.Identifier + " no posee indices");
-                                                            }
-                                                    }
-                                                }
-                                                catch (IndexOutOfRangeException)
-                                                {
-                                                    throw new Exception("Error de Semantica: Los indices especificados para el arreglo bidimensional " + found_variable.Identifier + " son erroneos");
-                                                }
-                                                i += 6; current_lexeme = lexemes[i];
-                                            }
-                                            else if (Regex.IsMatch(index_ss, "(\\[[0-9]+\\])"))
-                                            {
-                                                column = int.Parse(lexemes[i + 1].Text);
-                                                try
-                                                {
-                                                    switch (found_variable.Type)
-                                                    {
-                                                        case DATA_TYPE.ARRAY_BINARIO:
-                                                            {
-                                                                ((NonPrimitiveArray<bool>)found_variable).Validate(column);
-                                                                parameters.Add(((NonPrimitiveArray<bool>)found_variable).Values[column]);
-                                                                break;
-                                                            }
-                                                        case DATA_TYPE.ARRAY_CARACTER:
-                                                            {
-                                                                ((NonPrimitiveArray<char>)found_variable).Validate(column);
-                                                                parameters.Add(((NonPrimitiveArray<char>)found_variable).Values[column]);
-                                                                break;
-                                                            }
-                                                        case DATA_TYPE.ARRAY_ENTERO:
-                                                            {
-                                                                ((NonPrimitiveArray<int>)found_variable).Validate(column);
-                                                                parameters.Add(((NonPrimitiveArray<int>)found_variable).Values[column]);
-                                                                break;
-                                                            }
-                                                        case DATA_TYPE.ARRAY_DECIMAL:
-                                                            {
-                                                                ((NonPrimitiveArray<double>)found_variable).Validate(column);
-                                                                parameters.Add(((NonPrimitiveArray<double>)found_variable).Values[column]);
-                                                                break;
-                                                            }
-                                                        default:
-                                                            {
-                                                                throw new Exception("Error de Semantica: La variable " + found_variable.Identifier + " no posee indices");
-                                                            }
-                                                    }
-                                                }
-                                                catch (IndexOutOfRangeException)
-                                                {
-                                                    throw new Exception("Error de Semantica: Los indices especificados para el arreglo " + found_variable.Identifier + " son erroneos");
-                                                }
-                                                i += 3; current_lexeme = lexemes[i];
-                                            }
-                                            else
-                                            {
-                                                parameters.Add(found_variable);
-                                            }
-                                        }
-                                        else if (current_lexeme.WhatKind == LexemeKind.String)
-                                        {
-                                            parameters.Add(new NonPrimitiveArray<char>(current_lexeme.Text.Count() - 2, current_lexeme.Text.Replace("\"", String.Empty).ToArray(), DATA_TYPE.ARRAY_CARACTER, "000"));
-                                            i++; current_lexeme = lexemes[i];
-                                        }
-                                        else if (current_lexeme.WhatKind == LexemeKind.Numeric)
-                                        {
-                                            if (current_lexeme.Text.Contains("."))
-                                            {
-                                                parameters.Add(new PrimitiveVariable<double>(double.Parse(current_lexeme.Text), "000", DATA_TYPE.DECIMAL));
-                                            }
-                                            else
-                                            {
-                                                parameters.Add(new PrimitiveVariable<int>(int.Parse(current_lexeme.Text), "000", DATA_TYPE.ENTERO));
-                                            }
-                                            i++; current_lexeme = lexemes[i];
-                                        }
-                                        else
-                                        {
-                                            throw new Exception("Error de sintaxis en funcion" + Funcion_name);
-                                        }
-                                        if (current_lexeme.Text.Equals(","))
-                                        {
-                                            i++; current_lexeme = lexemes[i];//#
-                                        }
-                                        else if (current_lexeme.Text.Equals(")")) break;
-                                        else
-                                        {
-                                            throw new Exception("Error de Sintaxis: Los parametros deben estar separados por comas");
-                                        }
-                                    }
+                                    data_params.Add(getVariableValueFromLexeme(lexemes, ref i, src_local_variables));
                                     i++; current_lexeme = lexemes[i];
-                                    if (current_lexeme.Text.Equals(";"))
+                                    if (current_lexeme.Text.Equals(","))
                                     {
-                                        switch(Funcion_name)
-                                        {
-                                            case "Mostrar":
-                                                {
-                                                    dest_code.Add(new StructSystemCall("Mostrar", parameters));
-                                                    break;
-                                                }
-                                            case "Capturar":
-                                                {
-                                                    dest_code.Add(new StructSystemCall("Capturar", parameters));
-                                                    break;
-                                                }
-                                            case "LimpiarConsola":
-                                                {
-                                                    dest_code.Add(new StructSystemCall("LimpiarConsola", parameters));
-                                                    break;
-                                                }
-                                            case "SaltoLinea":
-                                                {
-                                                    dest_code.Add(new StructSystemCall("SaltoLinea", parameters));
-                                                    break;
-                                                }
-                                            case "MostrarLn":
-                                                {
-                                                    dest_code.Add(new StructSystemCall("MostrarLn", parameters));
-                                                    break;
-                                                }
-                                            case "Medir":
-                                                {
-                                                    dest_code.Add(new StructSystemCall("Medir", parameters));
-                                                    break;
-                                                }
-                                            default:
-                                                {
-                                                    throw new Exception("Error de Sintaxis: La funcion " + Funcion_name + " no existe");
-                                                }
-                                        }
-                                        i++; current_lexeme = lexemes[i];//#
-                                    }
-                                    else
-                                    {
-                                        throw new Exception("Error de Sintaxis: Los finales de linea deben acabar en ; ");
+                                        i++; current_lexeme = lexemes[i];
                                     }
                                 }
-                                else
-                                {
-                                    throw new Exception("Error de sintaxis en funcion " + Funcion_name);
-                                }
+                                i++; current_lexeme = lexemes[i];
+                                if (!current_lexeme.Text.Equals(";")) throw new Exception("Error de Sintaxis: Final de Linea invalido.");
+                                i++; current_lexeme = lexemes[i];
+                                dest_code.Add(new StructSystemCall(sys_func_name, data_params));
                             }
                             if(current_lexeme.WhatKind==LexemeKind.Identifier)
                             {
@@ -951,40 +790,52 @@ namespace CompiladorDeLenguaje.LanguageEngine
             DataField found_variable = null;
             findVariable(ref found_variable, src_local_variables, current_lexeme.Text, true);
             i++; current_lexeme = lexemes[i];
+            DataField index1 = null;
+            DataField index2 = null;
             int column = 0;
             int row = 0;
             string index_ss = string.Empty;
-            for (int x = i; (lexemes[x].WhatKind == LexemeKind.Numeric || lexemes[x].WhatKind == LexemeKind.SquareBrackets); x++)
+            for (int x = i; (lexemes[x].WhatKind == LexemeKind.Numeric || lexemes[x].WhatKind == LexemeKind.SquareBrackets || lexemes[x].WhatKind==LexemeKind.Identifier); x++)
             {
                 index_ss += lexemes[x].Text;
             }
-            if (Regex.IsMatch(index_ss, "(\\[[0-9]+\\])(\\[[0-9]+\\])"))
+            if (Regex.IsMatch(index_ss, "^(\\[(([a-zA-Z_]+)|([0-9]+))\\])(\\[(([a-zA-Z_]+)|([0-9]+))\\])$"))
             {
                 if (!lexemes[i + 6].Text.Equals("=")) throw new Exception("Error de Sintaxis: Signo de asignacion despues de variable faltante");
-                row = int.Parse(lexemes[i + 1].Text);
-                column = int.Parse(lexemes[i + 4].Text);
+                if (!int.TryParse(lexemes[i + 1].Text, out row))
+                {
+                    findVariable(ref index1, src_local_variables, lexemes[i + 1].Text, true);
+                    if (index1.Type != DATA_TYPE.ENTERO) throw new Exception("Error de Compilacion: Un indice solo puede ser entero");
+                }
+                else index1 = new PrimitiveVariable<int>(row, "000");
+                if (!int.TryParse(lexemes[i + 4].Text, out column))
+                {
+                    findVariable(ref index2, src_local_variables, lexemes[i + 4].Text, true);
+                    if (index2.Type != DATA_TYPE.ENTERO) throw new Exception("Error de Compilacion: Un indice solo puede ser entero");
+                }
+                else index2 = new PrimitiveVariable<int>(column, "000");
                 try
                 {
                     switch (found_variable.Type)
                     {
                         case DATA_TYPE.BIARRAY_BINARIO:
                             {
-                                found_variable = ((NonPrimitiveMultiArray<bool>)found_variable).Values[row, column];
+                                found_variable = new PrimitiveVariable<bool>(false, found_variable.Identifier + "[" + lexemes[i +1].Text + "][" + lexemes[i + 4].Text + "]") { ArrayIndex = new ArrayIndex(found_variable, (PrimitiveVariable<int>)index1, (PrimitiveVariable<int>)index2) };
                                 break;
                             }
                         case DATA_TYPE.BIARRAY_CARACTER:
                             {
-                                found_variable = ((NonPrimitiveMultiArray<char>)found_variable).Values[row, column];
+                                found_variable = new PrimitiveVariable<char>('\0', found_variable.Identifier + "[" + lexemes[i +1].Text + "][" + lexemes[i +4].Text + "]") { ArrayIndex = new ArrayIndex(found_variable, (PrimitiveVariable<int>)index1, (PrimitiveVariable<int>)index2) };
                                 break;
                             }
                         case DATA_TYPE.BIARRAY_ENTERO:
                             {
-                                found_variable = ((NonPrimitiveMultiArray<int>)found_variable).Values[row, column];
+                                found_variable = new PrimitiveVariable<int>(0, found_variable.Identifier + "[" + lexemes[i + 1].Text + "][" + lexemes[i + 4].Text + "]") { ArrayIndex = new ArrayIndex(found_variable, (PrimitiveVariable<int>)index1, (PrimitiveVariable<int>)index2) };
                                 break;
                             }
                         case DATA_TYPE.BIARRAY_DECIMAL:
                             {
-                                found_variable = ((NonPrimitiveMultiArray<double>)found_variable).Values[row, column];
+                                found_variable = new PrimitiveVariable<double>(0d, found_variable.Identifier + "[" + lexemes[i + 1].Text + "][" + lexemes[i + 4].Text + "]") { ArrayIndex = new ArrayIndex(found_variable, (PrimitiveVariable<int>)index1, (PrimitiveVariable<int>)index2) };
                                 break;
                             }
                         default:
@@ -999,36 +850,37 @@ namespace CompiladorDeLenguaje.LanguageEngine
                 }
                 i += 7; current_lexeme = lexemes[i];
             }
-            else if (Regex.IsMatch(index_ss, "(\\[[0-9]+\\])"))
+            else if (Regex.IsMatch(index_ss, "^(\\[(([a-zA-Z_]+)|([0-9]+))\\])$"))
             {
                 if (!lexemes[i + 3].Text.Equals("=")) throw new Exception("Error de Sintaxis: Signo de asignacion despues de variable faltante");
-                column = int.Parse(lexemes[i + 1].Text);
+                if (!int.TryParse(lexemes[i + 1].Text, out column))
+                {
+                    findVariable(ref index1, src_local_variables, lexemes[i + 1].Text, true);
+                    if (index1.Type != DATA_TYPE.ENTERO) throw new Exception("Error de Compilacion: Un indice solo puede ser entero");
+                }
+                else index2 = new PrimitiveVariable<int>(row, "000");
                 try
                 {
                     switch (found_variable.Type)
                     {
                         case DATA_TYPE.ARRAY_BINARIO:
                             {
-                                ((NonPrimitiveArray<bool>)found_variable).Validate(column);
-                                found_variable = ((NonPrimitiveArray<bool>)found_variable).Values[column];
+                                found_variable = new PrimitiveVariable<bool>(false, found_variable + "[" + lexemes[i + 1].Text + "]") { ArrayIndex = new ArrayIndex(found_variable, (PrimitiveVariable<int>)index1, null) };
                                 break;
                             }
                         case DATA_TYPE.ARRAY_CARACTER:
                             {
-                                ((NonPrimitiveArray<char>)found_variable).Validate(column);
-                                found_variable = ((NonPrimitiveArray<char>)found_variable).Values[column];
+                                found_variable = new PrimitiveVariable<char>('\0', found_variable + "[" + lexemes[i + 1].Text + "]") { ArrayIndex = new ArrayIndex(found_variable, (PrimitiveVariable<int>)index1, null) };
                                 break;
                             }
                         case DATA_TYPE.ARRAY_ENTERO:
                             {
-                                ((NonPrimitiveArray<int>)found_variable).Validate(column);
-                                found_variable = ((NonPrimitiveArray<int>)found_variable).Values[column];
+                                found_variable = new PrimitiveVariable<int>(0, found_variable + "[" + lexemes[i + 1].Text + "]") { ArrayIndex = new ArrayIndex(found_variable, (PrimitiveVariable<int>)index1, null) };
                                 break;
                             }
                         case DATA_TYPE.ARRAY_DECIMAL:
                             {
-                                ((NonPrimitiveArray<double>)found_variable).Validate(column);
-                                found_variable = ((NonPrimitiveArray<double>)found_variable).Values[column];
+                                found_variable = new PrimitiveVariable<double>(0d, found_variable + "[" + lexemes[i + 1].Text + "]") { ArrayIndex = new ArrayIndex(found_variable, (PrimitiveVariable<int>)index1, null) };
                                 break;
                             }
                         default:

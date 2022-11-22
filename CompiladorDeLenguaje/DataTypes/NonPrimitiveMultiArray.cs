@@ -56,8 +56,8 @@ namespace CompiladorDeLenguaje.DataTypes
         }
         public void Validate(int r, int c)
         {
-            if (!IsInitialized) throw new Exception($"Error de Compilacion: Referencia a Nulo en la variable {Identifier}. La variable {Identifier} era Nulo y no se pudo acceder");
-            if (Rows < r || Columns < c || r < 0 || c < 0) throw new Exception($"Error de Compilacion: Se detecto un especificacion de indices de la variable {Identifier} erronea. El tamaño de {Identifier} no lo permite.");
+            if (!IsInitialized) throw new Exception($"Error de Ejecucion: Referencia a Nulo en la variable {Identifier}. La variable {Identifier} era Nulo y no se pudo acceder");
+            if (Rows < r || Columns < c || r < 0 || c < 0) throw new Exception($"Error de Ejecucion: Se detecto un especificacion de indices de la variable {Identifier} erronea. El tamaño de {Identifier} no lo permite.");
         }
 
         public void renameValue(string ss)

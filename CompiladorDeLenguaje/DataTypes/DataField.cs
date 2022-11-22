@@ -9,18 +9,17 @@ using System.Threading.Tasks;
 
 namespace CompiladorDeLenguaje.DataTypes
 {
-    struct ArrayIndex<T> where T : struct
+    class ArrayIndex
     {
-        public NonPrimitiveArray<T> Array { get; set; }
-        public bool IsArray { get; set; }
-        public int index { get; set; }
-    }
-    struct MultiArrayIndex<T> where T : struct
-    {
-        public bool IsMultiArray { get; set; }
-        public NonPrimitiveMultiArray<T> MultiArray { get; set; }
-        public int Column { get; set; }
-        public int Row { get; set; }
+        public DataField Array { get; set; }
+        public PrimitiveVariable<int> Index1 { get; set; }
+        public PrimitiveVariable<int> Index2 { get; set; }
+        public ArrayIndex(DataField array, PrimitiveVariable<int> index1, PrimitiveVariable<int> index2)
+        {
+            Array = array;
+            Index1 = index1;
+            Index2 = index2;
+        }
     }
     public enum DATA_TYPE
     {
