@@ -41,9 +41,9 @@ namespace CompiladorDeLenguaje.Structures
                     foreach (StructField f in Code)
                     {
                         ret= f.runStructField();
-                        if (ret.Identifier.Equals("000_RETURN")) return ret;
-                        if (ret.Identifier == "000_CONTINUE") return ret;
-                        if (ret.Identifier == "000_BREAK") return ret;
+                        if (ret.IsBeingReturned) return ret;
+                        if (ret.IsBeingContinued) return ret;
+                        if (ret.IsBeingBroken) return ret;
                     }
                 }
                 else 
@@ -51,9 +51,9 @@ namespace CompiladorDeLenguaje.Structures
                     foreach (StructField f in ElseCode)
                     {
                         ret = f.runStructField();
-                        if (ret.Identifier.Equals("000_RETURN")) return ret;
-                        if (ret.Identifier == "000_CONTINUE") return ret;
-                        if (ret.Identifier == "000_BREAK") return ret;
+                        if (ret.IsBeingReturned) return ret;
+                        if (ret.IsBeingContinued) return ret;
+                        if (ret.IsBeingBroken) return ret;
                     }
                 }
             }
@@ -64,9 +64,9 @@ namespace CompiladorDeLenguaje.Structures
                     foreach (StructField f in Code)
                     {
                         ret = f.runStructField();
-                        if (ret.Identifier.Equals("000_RETURN")) return ret;
-                        if (ret.Identifier == "000_CONTINUE") return ret;
-                        if (ret.Identifier == "000_BREAK")return ret;
+                        if (ret.IsBeingReturned) return ret;
+                        if (ret.IsBeingContinued) return ret;
+                        if (ret.IsBeingBroken) return ret;
                     }
                 }
                 else
@@ -74,9 +74,9 @@ namespace CompiladorDeLenguaje.Structures
                     foreach (StructField f in ElseCode)
                     {
                         ret = f.runStructField();
-                        if (ret.Identifier.Equals("000_RETURN")) return ret;
-                        if (ret.Identifier == "000_CONTINUE") return ret;
-                        if (ret.Identifier == "000_BREAK") return ret;
+                        if (ret.IsBeingReturned) return ret;
+                        if (ret.IsBeingContinued) return ret;
+                        if (ret.IsBeingBroken) return ret;
                     }
                 }
             }
@@ -87,9 +87,9 @@ namespace CompiladorDeLenguaje.Structures
                     foreach (StructField f in Code)
                     {
                         ret = f.runStructField();
-                        if (ret.Identifier.Equals("000_RETURN")) return ret;
-                        if (ret.Identifier == "000_CONTINUE") return ret;
-                        if (ret.Identifier == "000_BREAK") return ret;
+                        if (ret.IsBeingReturned) return ret;
+                        if (ret.IsBeingContinued) return ret;
+                        if (ret.IsBeingBroken) return ret;
                     }
                 }
                 else
@@ -97,9 +97,9 @@ namespace CompiladorDeLenguaje.Structures
                     foreach (StructField f in ElseCode)
                     {
                         ret = f.runStructField();
-                        if (ret.Identifier.Equals("000_RETURN")) return ret;
-                        if (ret.Identifier == "000_CONTINUE") return ret;
-                        if (ret.Identifier == "000_BREAK") return ret;
+                        if (ret.IsBeingReturned) return ret;
+                        if (ret.IsBeingContinued) return ret;
+                        if (ret.IsBeingBroken) return ret;
                     }
                 }
             }

@@ -39,6 +39,9 @@ namespace CompiladorDeLenguaje.DataTypes
     }
     class DataField
     {
+        public bool IsBeingReturned { get; set; } = false;
+        public bool IsBeingContinued { get; set; } = false;
+        public bool IsBeingBroken { get; set; } = false;
         public bool IsInitialized { get; set; }
         public int Rows { get; set; } = 0;
         public int Columns { get; set; } = 0;

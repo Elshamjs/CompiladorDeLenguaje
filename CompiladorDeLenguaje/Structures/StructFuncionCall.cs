@@ -25,6 +25,9 @@ namespace CompiladorDeLenguaje.Structures
             for (int i = 0; i < ValueParameters.Count; i++)
             {
                 Funcion.Parameters[i].Variable.VariableValue= ValueParameters[i].VariableValue;
+                Funcion.Parameters[i].Variable.Columns = ValueParameters[i].Columns;
+                Funcion.Parameters[i].Variable.Rows = ValueParameters[i].Rows;
+                Funcion.Parameters[i].Variable.IsInitialized= true;
             }
             return Funcion.runStructField(); 
         }

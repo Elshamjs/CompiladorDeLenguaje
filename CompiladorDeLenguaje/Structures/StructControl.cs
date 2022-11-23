@@ -26,11 +26,11 @@ namespace CompiladorDeLenguaje.Structures
             {
                 case ControlType.Continue:
                     {
-                        return new DataField(null, "000_CONTINUE", DATA_TYPE.NULO);
+                        return new DataField(null, "000", DATA_TYPE.NULO) { IsBeingContinued = true };
                     }
                 case ControlType.Break:
                     {
-                        return new DataField(null, "000_BREAK", DATA_TYPE.NULO);
+                        return new DataField(null, "000", DATA_TYPE.NULO) { IsBeingBroken = true };
                     }
             }
             throw new Exception("Error de Ejecucion: No se pudo resolver una intruccion de control");

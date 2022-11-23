@@ -775,14 +775,130 @@ Codigo:
 
 
 
+____________________________________________________________________
+
+
+Global:
+{
+    Caracter[] hola;
+}
+Funcion Caracter[] unir_txt(Caracter[] sx, Caracter[] sy)
+{
+    Caracter[] buffer= Caracter[50];
+    Entero buffer_cont=0;
+    Entero max;
+    $max= #Medir(sx, 0);
+    Para(Entero i=0; SoloSi((i<max)); Asigna $i=(i+1); ) Hace
+    {
+        $buffer[buffer_cont]=sx[i];
+        $buffer_cont=(buffer_cont+1);
+    }
+    $max= #Medir(sy, 0);
+    Para(Entero i=0; SoloSi((i<max)); Asigna $i=(i+1); ) Hace
+    {
+        $buffer[buffer_cont]=sy[i];
+        $buffer_cont=(buffer_cont+1);
+    }
+    Retorna buffer;
+}
+Codigo:
+{
+    Caracter[] txta= "Hola ";
+    Caracter[] txtb= "Mundo";
+    $hola= #unir_txt(txta, txtb);
+    #MostrarLn(hola);
+}
+
+
+
+------------------------------------------------------------------------------
 
 
 
 
 
+Global:{}
+
+Codigo:
+{
+    Si(Verdadero) Hace
+    {
+        Entero prueba=0;
+    }
+    $prueba=1;
+}
+
+
+
+
+------------------------------------------------------
 
 
 
 
 
+Global: \~ Aca se declara las variables globales del codigo ~\
+{
+    \~ Estas son todas las formas posibles de inicializar variables en VALENTINA~\ \~
+    Entero aa;
+    Entero int=10;
+    Entero eint=-10;
+    Decimal float= 0.5;
+    Decimal efloat=-0.5;
+    Binario bool= Falso; 
+    Caracter char= 'A';
+    Caracter[] buffer= Caracter[100];
+    Entero[] intarray = Entero[100];
+    Decimal[] floatarray= Decimal[100];
+    Binario[] boolarray=  Binario[100]; 
+    Caracter[][] bibuffer=Caracter[10][10];
+    Entero[][] biintarray=Entero[10][10];
+    Decimal[][] bifloatarray=Decimal[10][10];
+    Binario[][] biboolarray=Binario[10][10];
+    Caracter[] hola= "Hola Mundo"; ~\
+}
+ \~ De esta forma se declara una funcion, despues de la palabra reservada funcion va el tipo de dato, luego el nombre y los parametros
+Funcion Entero hola(Caracter[] hola_ss)
+{
+    Entero a= 0;
+    Retorna a;
+    #MostrarLn(hola_ss);
+}
+~\
+Codigo: \~Siempre debes declarar la etiqueta "Codigo:" en tu programa, aca inicia el funcionamiento del mismo~\
+{
+  \~Entero a= -2;
+    #MostrarLn(a);
+    Decimal b= -0.4;
+    #MostrarLn(b);
+    Caracter c= 'b';      Estas son algunas forma de asginar variables
+    #MostrarLn(c);        En VALENTINA solo se puede por el momento en la version actual hacer operaciones de unicamente dos
+    Binario d= Falso;     operando, los operadores logicos son: Y O (No)
+    #MostrarLn(d);        Los Operadores comparadores son: < > <= >= == !=
+    #hola(hola);          Y los operadores aritmeticos son: + - * /
+~\
+    \~ En VALENTINA existen diversas funcion propias del lenguaje como en muchos otros lenguajes, por ejemplo Capturar,
+    para producir datos de entrada, o las diferentes formas de salida como son: SaltoLinea(), Mostrar(variable), MostrarLn(variable).
+    Otras utiles son Medir(Arreglo, Entero), esta funcion te permite saber el tamaño del arreglo~\
 
+    \~ Estas son la estructuras de control de Valentina, tambien si te sientes valiente puedes probar a utilizar recursividad~\
+    \~ Para(Entero i=0; SoloSi((i<max)); Asigna $i=(i+1); ) Hace {} ~\
+    \~ Si((lim>0)) Hace {} ~\
+    \~ Mientras((cont<=10)) Hace ~\
+    
+    #Mostrar("Hola Mundo"); \~ Por ultimo pero no menos importante recuerda acabar todas las lineas con ";" ~\
+    
+   \~ PRESIONA EL BOTON DE COMPILAR Y LUEGO EL DE EJECUTAR ~\
+}
+
+
+
+Global:
+{
+    
+}
+
+Codigo:
+{
+    
+}

@@ -16,7 +16,9 @@ namespace CompiladorDeLenguaje.Structures
         }
         public override DataField runStructField()
         {
-            return new DataField(ReturnVariable.VariableValue, "000_RETURN", ReturnVariable.Type);
+            //return new DataField(ReturnVariable.VariableValue, "000_RETURN", ReturnVariable.Type);
+            ReturnVariable.IsBeingReturned = true;
+            return ReturnVariable;
         }
     }
 }

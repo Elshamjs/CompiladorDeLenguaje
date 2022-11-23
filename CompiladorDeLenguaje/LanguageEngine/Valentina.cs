@@ -21,7 +21,7 @@ namespace CompiladorDeLenguaje.LanguageEngine
         static public IEnumerable<string> data_types = new List<string>() { "Entero", "Decimal", "Binario", "Caracter", "Nulo" };/**/
         static public IEnumerable<string> round_brackets = new List<string>() { "(", ")" };/**/
         static public IEnumerable<string> curly_brackets = new List<string>() { "{", "}" };/**/
-        static public IEnumerable<string> key_character = new List<string>() { "#", "$", "?", "¿", "=", ";", "\"", ","};/**/
+        static public IEnumerable<string> key_character = new List<string>() { "#", "$", "=", ";", "\"", ","};/**/
         static public IEnumerable<string> square_brackets = new List<string>() { "[", "]" };/**/
         static public IEnumerable<string> boolvalues_brackets = new List<string>() { "Verdadero", "Falso" };/**/
         static public IEnumerable<string> key_word = new List<string>() { "Mientras", "Para", "Si", "Retorna", "Funcion", "Global:", "Codigo:", "Sino", "Hasta", "Sale", "Continua", "Hace", "Asigna", "SoloSi" };/**/
@@ -102,7 +102,7 @@ namespace CompiladorDeLenguaje.LanguageEngine
                 catch(NullReferenceException)
                 {
                     Valentina.Window.syncAppendToOutput("\nEl programa a finalizado con errores...");
-                    Window.ProgramFails(new Exception("Error de Ejecucion: Alguna variable no se ha inicializado y se ha intentado acceder a Nulo desde una variable"));
+                    Window.ProgramFails(new Exception("Error de Ejecucion: Alguna variable no se ha inicializado o su valor era Nulo. Se ha intentado acceder a Nulo desde una variable"));
                 }
                 catch(Exception ex)
                 {
@@ -858,7 +858,7 @@ namespace CompiladorDeLenguaje.LanguageEngine
                     findVariable(ref index1, src_local_variables, lexemes[i + 1].Text, true);
                     if (index1.Type != DATA_TYPE.ENTERO) throw new Exception("Error de Compilacion: Un indice solo puede ser entero");
                 }
-                else index2 = new PrimitiveVariable<int>(row, "000");
+                else index2 = new PrimitiveVariable<int>(column, "000");
                 try
                 {
                     switch (found_variable.Type)
@@ -1157,8 +1157,7 @@ namespace CompiladorDeLenguaje.LanguageEngine
                     case LexemeKind.Identifier:
                         {
                             if (negative == -1) throw new Exception("Error de Sintaxis: El valor de asignacion negativo para variables no es posible en valores que no sean operaciones");
-                            DataField found_variable_value = null;
-                            findVariable(ref found_variable_value, src_local_variables, current_lexeme.Text, true);
+                            DataField found_variable_value = getVariableValueFromLexeme(lexemes, ref i, src_local_variables);
                             if (found_variable_value.Type == found_variable.Type)
                             {
                                 i++; current_lexeme = lexemes[i];
@@ -1382,6 +1381,7 @@ namespace CompiladorDeLenguaje.LanguageEngine
                     throw new Exception("Error de Sintaxis: Inicio de linea invalido. Talvez se haya omitido alguna seccion de codigo como \"Codigo:\" o \"Global:\"");
                 }
             }
+            if(!(globaltag_complete && codigotag_complete)) throw new Exception("Error de Sintaxis: Inicio de linea invalido. Talvez se haya omitido alguna seccion de codigo como \"Codigo:\" o \"Global:\"");
             return (globaltag_complete && codigotag_complete);
         }
         static public StructFuncion findFuncion(string identifier, List<StructVariableDeclare> fparams)
@@ -1492,13 +1492,23 @@ namespace CompiladorDeLenguaje.LanguageEngine
             if (Input == null) throw new Exception("Engine Error: InputNotSetException");
             List<string> strings = getAll(Input.Text);
             List<Lexeme> result = new List<Lexeme>();
+            bool comment = false;
             for(int i= 0; i < strings.Count; i++)
             {
-                if(i==126)
-                {
-                    Console.WriteLine("a");
-                }
                 string this_ss = strings[i];
+                if ((strings[i] + (i+1<strings.Count? strings[i + 1] : string.Empty) == "~\\"))
+                {
+                    comment = false;
+                    i++;
+                    continue;
+                }
+                if ((strings[i]+ (i + 1 < strings.Count ? strings[i + 1] : string.Empty) == "\\~"))
+                {
+                    comment = true;
+                    i++;
+                    continue;
+                }
+                if (comment) continue;
                 if (arithmetic_operators.Contains(this_ss))
                 {
                     result.Add(new Lexeme(this_ss, LexemeKind.ArithmeticOperator));

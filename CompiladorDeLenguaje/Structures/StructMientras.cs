@@ -32,9 +32,9 @@ namespace CompiladorDeLenguaje.Structures
                     foreach (StructField f in Code)
                     {
                         ret = f.runStructField();
-                        if (ret.Identifier == "000_CONTINUE") break;
-                        if (ret.Identifier == "000_BREAK") { @break = true; break; }
-                        if (ret.Identifier == "000_RETURN") { return ret; }
+                        if (ret.IsBeingContinued) break;
+                        if (ret.IsBeingBroken) { @break = true; break; }
+                        if (ret.IsBeingReturned) { return ret; }
                     }
                     if (@break) break;
                 }
@@ -46,9 +46,9 @@ namespace CompiladorDeLenguaje.Structures
                     foreach(StructField f in Code)
                     {
                         ret = f.runStructField();
-                        if (ret.Identifier == "000_CONTINUE") break;
-                        if (ret.Identifier == "000_BREAK") { @break = true; break; }
-                        if (ret.Identifier == "000_RETURN") { return ret; }
+                        if (ret.IsBeingContinued) break;
+                        if (ret.IsBeingBroken) { @break = true; break; }
+                        if (ret.IsBeingReturned) { return ret; }
                     }
                     if (@break) break;
                 }

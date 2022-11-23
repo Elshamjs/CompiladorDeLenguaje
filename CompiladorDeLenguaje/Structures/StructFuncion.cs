@@ -32,7 +32,7 @@ namespace CompiladorDeLenguaje.Structures
             foreach (var item in Code)
             {
                 DataField return_data= item.runStructField();
-                if (return_data.Identifier.Equals("000_RETURN")) return return_data;
+                if (return_data.IsBeingReturned) return return_data;
             }
             return DataField.Null;
         }
